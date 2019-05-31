@@ -4,6 +4,51 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct {
+  void **data;
+  int capacity;
+  int len;
+} Vector;
+
+Vector *new_vector() {
+  Vector *vec = malloc(sizeof(Vector));
+  vec->data = malloc(sizeof(void *) * 16);
+  vec->capacity = 16;
+  vec->len = 0;
+  return vec;
+}
+
+void vec_push(Vector *vec, void *elem) {
+  if (vec->capacity == vec->len) {
+    vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
+  }
+  vec->data[vec->len++] = elem;
+}
+
+void expect(int line, int expected, int actual) {
+  if (expected == actual) {
+    return;
+  }
+  fprintf(stderr, "%d: %d expected, but got %d\n", line, expected, actual);
+  exit(1);
+}
+
+void runtest() {
+  Vector *vec = new_vector();
+  expect(__LINE__, 0, vec->len);
+
+  for (intptr_t i = 0; i < 100; i++)
+    vec_push(vec, (void *)i);
+
+  expect(__LINE__, 100, vec->len);
+  expect(__LINE__, 0, (long)vec->data[0]);
+  expect(__LINE__, 50, (long)vec->data[50]);
+  expect(__LINE__, 99, (long)vec->data[99]);
+
+  printf("OK\n");
+}
+
 enum {
   TK_NUM = 256, // Number
   TK_EQ,        // ==
@@ -19,10 +64,26 @@ typedef struct {
   char *input;
 } Token;
 
+Token *new_token(int ty, char *input) {
+  Token *token = malloc(sizeof(Token));
+  token->ty = ty;
+  token->val = 0;
+  token->input = input;
+  return token;
+}
+
+Token *new_number_token(int val, char *input) {
+  Token *token = malloc(sizeof(Token));
+  token->ty = TK_NUM;
+  token->val = val;
+  token->input = input;
+  return token;
+}
+
 char *user_input;
 
 int pos;
-Token tokens[100];
+Vector *tokens;
 
 void error(char *fmt, ...) {
   va_list ap;
@@ -42,8 +103,9 @@ void error_at(char *loc, char *msg) {
 
 void tokenize() {
   char *p = user_input;
+  Token *token;
 
-  int i = 0;
+  tokens = new_vector();
   while (*p) {
     // skip blank character
     if (isspace(*p)) {
@@ -52,59 +114,53 @@ void tokenize() {
     }
 
     if (strncmp(p, "==", 2) == 0) {
-      tokens[i].ty = TK_EQ;
-      tokens[i].input = p;
-      i++;
+      token = new_token(TK_EQ, p);
+      vec_push(tokens, token);
       p += 2;
       continue;
     }
 
     if (strncmp(p, "!=", 2) == 0) {
-      tokens[i].ty = TK_NE;
-      tokens[i].input = p;
-      i++;
+      token = new_token(TK_NE, p);
+      vec_push(tokens, token);
       p += 2;
       continue;
     }
 
     if (strncmp(p, "<=", 2) == 0) {
-      tokens[i].ty = TK_LE;
-      tokens[i].input = p;
-      i++;
+      token = new_token(TK_LE, p);
+      vec_push(tokens, token);
       p += 2;
       continue;
     }
 
     if (strncmp(p, ">=", 2) == 0) {
-      tokens[i].ty = TK_GE;
-      tokens[i].input = p;
-      i++;
+      token = new_token(TK_GE, p);
+      vec_push(tokens, token);
       p += 2;
       continue;
     }
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
         *p == ')' || *p == '<' || *p == '>') {
-      tokens[i].ty = *p;
-      tokens[i].input = p;
-      i++;
+      token = new_token(*p, p);
+      vec_push(tokens, token);
       p++;
       continue;
     }
 
     if (isdigit(*p)) {
-      tokens[i].ty = TK_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
+      int val = strtol(p, &p, 10);
+      token = new_number_token(val, p);
+      vec_push(tokens, token);
       continue;
     }
 
     error_at(p, "Can not tokenize");
   }
 
-  tokens[i].ty = TK_EOF;
-  tokens[i].input = p;
+  token = new_token(TK_EOF, p);
+  vec_push(tokens, token);
 }
 
 // node type
@@ -138,7 +194,8 @@ Node *new_node_num(int val) {
 }
 
 int consume(int ty) {
-  if (tokens[pos].ty != ty) {
+  Token *token = tokens->data[pos];
+  if (token->ty != ty) {
     return 0;
   }
   pos++;
@@ -226,19 +283,24 @@ Node *unary() {
 }
 
 Node *term() {
+  Token *t;
+
   if (consume('(')) {
     Node *node = expr();
     if (!consume(')')) {
-      error_at(tokens[pos].input, "Expect ')'");
+      t = tokens->data[pos];
+      error_at(t->input, "Expect ')'");
     }
     return node;
   }
 
-  if (tokens[pos].ty == TK_NUM) {
-    return new_node_num(tokens[pos++].val);
+  t = tokens->data[pos];
+  if (t->ty == TK_NUM) {
+    pos++;
+    return new_node_num(t->val);
   }
 
-  error_at(tokens[pos].input, "Expect '(' or number");
+  error_at(t->input, "Expect '(' or number");
   return NULL; // Can not reach here
 }
 
@@ -288,6 +350,11 @@ int main(int argc, char **argv) {
   if (argc != 2) {
     fprintf(stderr, "Wrong argument number");
     return 1;
+  }
+
+  if (strcmp(argv[1], "-test") == 0) {
+    runtest();
+    return 0;
   }
 
   user_input = argv[1];
