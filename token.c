@@ -96,6 +96,20 @@ void tokenize() {
       continue;
     }
 
+    if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
+      token = new_token(TK_IF, p);
+      vec_push(tokens, token);
+      p += 2;
+      continue;
+    }
+
+    if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
+      token = new_token(TK_ELSE, p);
+      vec_push(tokens, token);
+      p += 4;
+      continue;
+    }
+
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
         *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';') {
       token = new_token(*p, p);

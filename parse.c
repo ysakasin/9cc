@@ -34,6 +34,13 @@ int consume(int ty) {
   return 1;
 }
 
+static void expect(int ty) {
+  if (!consume(ty)) {
+    Token *t = tokens->data[pos];
+    error_at(t->input, "Unexpected");
+  }
+}
+
 int is_eof() {
   Token *t = tokens->data[pos];
   return t->ty == TK_EOF;
@@ -53,6 +60,20 @@ Node *stmt() {
 
   if (consume(TK_RETURN)) {
     node = new_node(ND_RETURN, expr(), NULL);
+  } else if (consume(TK_IF)) {
+    node = new_node(ND_IF, NULL, NULL);
+    expect('(');
+    node->cond = expr();
+    expect(')');
+
+    node->then = stmt();
+
+    if (consume(TK_ELSE)) {
+      node->els = stmt();
+    } else {
+      node->els = NULL;
+    }
+    return node;
   } else {
     node = expr();
   }

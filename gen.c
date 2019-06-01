@@ -10,6 +10,8 @@ void gen_lval(Node *node) {
   printf("  push rax\n");
 }
 
+int if_id;
+
 void gen(Node *node) {
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
@@ -31,6 +33,32 @@ void gen(Node *node) {
     printf("  pop rbp\n");
     printf("  ret\n");
     return;
+  }
+
+  if (node->ty == ND_IF) {
+    int label = if_id++;
+    gen(node->cond);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+
+    if (node->els == NULL) {
+      printf("  je .Lend%d\n", label);
+      gen(node->then);
+      printf("  pop rax\n");
+      printf(".Lend%d:\n", label);
+      printf("  push rax\n");
+      return;
+    } else {
+      printf("  je .Lelse%d\n", label);
+      gen(node->then);
+      printf("  jmp .Lend%d\n", label);
+
+      printf(".Lelse%d:\n", label);
+      gen(node->els);
+
+      printf(".Lend%d:\n", label);
+      return;
+    }
   }
 
   if (node->ty == '=') {

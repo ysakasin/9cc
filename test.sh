@@ -30,5 +30,8 @@ try 1 "1 + 2 == 3;"
 try 3 "a=2;a+1;"
 try 3 "return 1+2;return 0;"
 try 4 "abc = 1; d = 3; abc + d;"
+try 1 "a = 1; if (a == 0) a = 0; a;"
+try 0 "a = 1; if (a < 3) a = 0; a;"
+try 5 "a = 1; if (a > 3) a = 0; else a = 4; a;"
 
 echo OK
