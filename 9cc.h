@@ -49,11 +49,13 @@ enum {
 typedef struct {
   int ty;
   int val;
+  char *name;
   char *input;
 } Token;
 
 Token *new_token(int ty, char *input);
 Token *new_number_token(int val, char *input);
+Token *new_ident_token(char *name, char *input);
 
 extern Vector *tokens;
 extern int pos;
@@ -83,14 +85,15 @@ typedef struct Node {
   struct Node *lhs;
   struct Node *rhs;
   int val;
-  char name;
+  int offset;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
-Node *new_node_ident(char name);
+Node *new_node_ident(int offset);
 
 extern Vector *code;
+extern Map *idents;
 
 // -------------------- //
 // Parser

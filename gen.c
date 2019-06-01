@@ -5,9 +5,8 @@ void gen_lval(Node *node) {
     error("lhs is not identifier");
   }
 
-  int offset = ('z' - node->name + 1) * 8;
   printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", offset);
+  printf("  sub rax, %d\n", node->offset);
   printf("  push rax\n");
 }
 

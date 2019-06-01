@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 Vector *code;
+Map *idents;
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
@@ -17,10 +18,10 @@ Node *new_node_num(int val) {
   return node;
 }
 
-Node *new_node_ident(char name) {
+Node *new_node_ident(int offset) {
   Node *node = malloc(sizeof(Node));
   node->ty = ND_IDENT;
-  node->name = name;
+  node->offset = offset;
   return node;
 }
 
@@ -40,6 +41,7 @@ int is_eof() {
 
 void program() {
   code = new_vector();
+  idents = new_map();
 
   while (!is_eof()) {
     vec_push(code, stmt());
@@ -161,8 +163,14 @@ Node *term() {
   }
 
   if (t->ty == TK_IDENT) {
+    int offset = (int)map_get(idents, t->name);
+    if (offset == 0) {
+      offset = (idents->keys->len + 1) * 8;
+      map_put(idents, t->name, (void *)offset);
+    }
+
     pos++;
-    return new_node_ident(*t->input);
+    return new_node_ident(offset);
   }
 
   error_at(t->input, "Expect '(' or number");

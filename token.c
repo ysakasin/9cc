@@ -22,6 +22,14 @@ Token *new_number_token(int val, char *input) {
   return token;
 }
 
+Token *new_ident_token(char *name, char *input) {
+  Token *token = malloc(sizeof(Token));
+  token->ty = TK_IDENT;
+  token->name = name;
+  token->input = input;
+  return token;
+}
+
 Vector *tokens;
 int pos;
 char *user_input;
@@ -29,6 +37,16 @@ char *user_input;
 int is_alnum(char c) {
   return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
          ('0' <= c && c <= '9') || (c == '_');
+}
+
+char *strtoident(char *c, char **endptr) {
+  int length = 0;
+  while (is_alnum(*(c + length))) {
+    length++;
+  }
+
+  *endptr = (c + length);
+  return strndup(c, length);
 }
 
 void tokenize() {
@@ -93,10 +111,10 @@ void tokenize() {
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z') {
-      token = new_token(TK_IDENT, p);
+    if (is_alnum(*p)) {
+      char *name = strtoident(p, &p);
+      token = new_ident_token(name, p);
       vec_push(tokens, token);
-      p++;
       continue;
     }
 

@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
   // Prologue
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
-  printf("  sub rsp, 208\n"); // allocate variables on stack
+  // allocate variables on stack
+  printf("  sub rsp, %d\n", idents->keys->len * 8);
 
   for (int i = 0; i < code->len; i++) {
     gen(code->data[i]);
