@@ -78,6 +78,7 @@ enum {
   ND_IDENT,     // Identifier
   ND_RETURN,    // return
   ND_IF,        // if
+  ND_BLOCK,     // Block
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_LE,        // <=
@@ -92,6 +93,7 @@ typedef struct Node {
   struct Node *cond;
   struct Node *then;
   struct Node *els;
+  Vector *stmts;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);

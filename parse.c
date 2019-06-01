@@ -60,7 +60,10 @@ Node *stmt() {
 
   if (consume(TK_RETURN)) {
     node = new_node(ND_RETURN, expr(), NULL);
-  } else if (consume(TK_IF)) {
+    return node;
+  }
+
+  if (consume(TK_IF)) {
     node = new_node(ND_IF, NULL, NULL);
     expect('(');
     node->cond = expr();
@@ -74,10 +77,19 @@ Node *stmt() {
       node->els = NULL;
     }
     return node;
-  } else {
-    node = expr();
   }
 
+  if (consume('{')) {
+    node = new_node(ND_BLOCK, NULL, NULL);
+    node->stmts = new_vector();
+
+    while (!consume('}')) {
+      vec_push(node->stmts, stmt());
+    }
+    return node;
+  }
+
+  node = expr();
   if (!consume(';')) {
     Token *t = tokens->data[pos];
     error_at(t->input, "Expected ';'");
