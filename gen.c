@@ -81,6 +81,21 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == ND_CALL) {
+    // align (rsp % 16 == 0)
+    printf("  mov rax, rsp\n");
+    printf("  mov rdi, 16\n");
+    printf("  cqo\n");
+    printf("  div rdi\n");
+    printf("  cmp rdx, 0\n");
+    printf("  setne al\n");
+    printf("  movzb eax, al\n");
+    printf("  add rsp, rax\n");
+
+    printf("  call %s\n", node->name);
+    return;
+  }
+
   gen(node->lhs);
   gen(node->rhs);
 

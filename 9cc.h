@@ -82,6 +82,7 @@ enum {
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_LE,        // <=
+  ND_CALL,
 };
 
 typedef struct Node {
@@ -94,6 +95,7 @@ typedef struct Node {
   struct Node *then;
   struct Node *els;
   Vector *stmts;
+  char *name;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);

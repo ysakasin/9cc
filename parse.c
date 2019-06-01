@@ -190,9 +190,20 @@ Node *term() {
   }
 
   t = tokens->data[pos];
+  Token *peek = tokens->data[pos + 1];
   if (t->ty == TK_NUM) {
     pos++;
     return new_node_num(t->val);
+  }
+
+  if (t->ty == TK_IDENT && peek->ty == '(') {
+    pos += 2;
+    expect(')');
+
+    Node *node = new_node(ND_CALL, NULL, NULL);
+    node->name = t->name;
+
+    return node;
   }
 
   if (t->ty == TK_IDENT) {
