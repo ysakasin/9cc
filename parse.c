@@ -47,7 +47,14 @@ void program() {
 }
 
 Node *stmt() {
-  Node *node = expr();
+  Node *node;
+
+  if (consume(TK_RETURN)) {
+    node = new_node(ND_RETURN, expr(), NULL);
+  } else {
+    node = expr();
+  }
+
   if (!consume(';')) {
     Token *t = tokens->data[pos];
     error_at(t->input, "Expected ';'");

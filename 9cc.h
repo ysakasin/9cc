@@ -26,6 +26,7 @@ void runtest();
 enum {
   TK_NUM = 256, // Number
   TK_IDENT,     // Identifier
+  TK_RETURN,    // return
   TK_EQ,        // ==
   TK_NE,        // !=
   TK_LE,        // <=
@@ -59,6 +60,7 @@ void tokenize();
 enum {
   ND_NUM = 256, // Number
   ND_IDENT,     // Identifier
+  ND_RETURN,    // return
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_LE,        // <=

@@ -28,5 +28,6 @@ try 1 "1<2;"
 try 0 "1+1 >= 3;"
 try 1 "1 + 2 == 3;"
 try 3 "a=2;a+1;"
+try 3 "return 1+2;return 0;"
 
 echo OK
