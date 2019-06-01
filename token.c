@@ -67,7 +67,7 @@ void tokenize() {
     }
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
-        *p == ')' || *p == '<' || *p == '>') {
+        *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';') {
       token = new_token(*p, p);
       vec_push(tokens, token);
       p++;
@@ -78,6 +78,13 @@ void tokenize() {
       int val = strtol(p, &p, 10);
       token = new_number_token(val, p);
       vec_push(tokens, token);
+      continue;
+    }
+
+    if ('a' <= *p && *p <= 'z') {
+      token = new_token(TK_IDENT, p);
+      vec_push(tokens, token);
+      p++;
       continue;
     }
 

@@ -25,6 +25,7 @@ void runtest();
 
 enum {
   TK_NUM = 256, // Number
+  TK_IDENT,     // Identifier
   TK_EQ,        // ==
   TK_NE,        // !=
   TK_LE,        // <=
@@ -56,10 +57,11 @@ void tokenize();
 // -------------------- //
 
 enum {
-  ND_NUM = 256,
-  ND_EQ, // ==
-  ND_NE, // !=
-  ND_LE, // <=
+  ND_NUM = 256, // Number
+  ND_IDENT,     // Identifier
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LE,        // <=
 };
 
 typedef struct Node {
@@ -67,10 +69,14 @@ typedef struct Node {
   struct Node *lhs;
   struct Node *rhs;
   int val;
+  char name;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+Node *new_node_ident(char name);
+
+extern Vector *code;
 
 // -------------------- //
 // Parser
@@ -78,7 +84,10 @@ Node *new_node_num(int val);
 
 int consume(int ty);
 
+void program();
+Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();

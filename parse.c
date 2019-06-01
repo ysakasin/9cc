@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+Vector *code;
+
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
   node->ty = ty;
@@ -15,6 +17,13 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *new_node_ident(char name) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_IDENT;
+  node->name = name;
+  return node;
+}
+
 int consume(int ty) {
   Token *token = tokens->data[pos];
   if (token->ty != ty) {
@@ -24,7 +33,37 @@ int consume(int ty) {
   return 1;
 }
 
-Node *expr() { return equality(); }
+int is_eof() {
+  Token *t = tokens->data[pos];
+  return t->ty == TK_EOF;
+}
+
+void program() {
+  code = new_vector();
+
+  while (!is_eof()) {
+    vec_push(code, stmt());
+  }
+}
+
+Node *stmt() {
+  Node *node = expr();
+  if (!consume(';')) {
+    Token *t = tokens->data[pos];
+    error_at(t->input, "Expected ';'");
+  }
+  return node;
+}
+
+Node *expr() { return assign(); }
+
+Node *assign() {
+  Node *node = equality();
+  if (consume('=')) {
+    node = new_node('=', node, assign());
+  }
+  return node;
+}
 
 Node *equality() {
   Node *node = relational();
@@ -112,6 +151,11 @@ Node *term() {
   if (t->ty == TK_NUM) {
     pos++;
     return new_node_num(t->val);
+  }
+
+  if (t->ty == TK_IDENT) {
+    pos++;
+    return new_node_ident(*t->input);
   }
 
   error_at(t->input, "Expect '(' or number");
