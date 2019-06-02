@@ -82,15 +82,24 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_CALL) {
+    char reg[][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
+    for (int i = 0; i < node->args->len; i++) {
+      gen(node->args->data[i]);
+    }
+
+    for (int i = node->args->len - 1; i >= 0; i--) {
+      printf("  pop %s\n", reg[i]);
+    }
     // align (rsp % 16 == 0)
     printf("  mov rax, rsp\n");
-    printf("  mov rdi, 16\n");
+    printf("  mov rbx, 16\n");
     printf("  cqo\n");
-    printf("  div rdi\n");
+    printf("  div rbx\n");
     printf("  cmp rdx, 0\n");
     printf("  setne al\n");
     printf("  movzb eax, al\n");
-    printf("  add rsp, rax\n");
+    printf("  sub rsp, rax\n");
 
     printf("  call %s\n", node->name);
     return;

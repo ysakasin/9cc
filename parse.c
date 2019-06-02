@@ -197,11 +197,24 @@ Node *term() {
   }
 
   if (t->ty == TK_IDENT && peek->ty == '(') {
-    pos += 2;
-    expect(')');
-
     Node *node = new_node(ND_CALL, NULL, NULL);
     node->name = t->name;
+    node->args = new_vector();
+    pos += 2;
+
+    if (consume(')')) {
+      return node;
+    }
+
+    vec_push(node->args, expr());
+    while (!consume(')')) {
+      expect(',');
+      vec_push(node->args, expr());
+    }
+
+    if (node->args->len > 6) {
+      error_at(peek->input, "No more than 6 arguments");
+    }
 
     return node;
   }

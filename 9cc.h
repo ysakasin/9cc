@@ -96,6 +96,7 @@ typedef struct Node {
   struct Node *els;
   Vector *stmts;
   char *name;
+  Vector *args;
 } Node;
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
