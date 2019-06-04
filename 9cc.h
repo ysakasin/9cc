@@ -56,8 +56,8 @@ typedef struct {
 } Token;
 
 Token *new_token(int ty, char *input);
-Token *new_number_token(int val, char *input);
-Token *new_ident_token(char *name, char *input);
+Token *new_token_number(int val, char *input);
+Token *new_token_ident(char *name, char *input);
 
 extern Vector *tokens;
 extern int pos;
@@ -99,7 +99,8 @@ typedef struct Node {
   Vector *args;
 } Node;
 
-Node *new_node(int ty, Node *lhs, Node *rhs);
+Node *new_node(int ty);
+Node *new_node_binop(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *new_node_ident(int offset);
 

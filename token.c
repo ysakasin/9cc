@@ -7,26 +7,21 @@
 #include "9cc.h"
 
 Token *new_token(int ty, char *input) {
-  Token *token = malloc(sizeof(Token));
+  Token *token = calloc(1, sizeof(Token));
   token->ty = ty;
-  token->val = 0;
   token->input = input;
   return token;
 }
 
-Token *new_number_token(int val, char *input) {
-  Token *token = malloc(sizeof(Token));
-  token->ty = TK_NUM;
+Token *new_token_number(int val, char *input) {
+  Token *token = new_token(TK_NUM, input);
   token->val = val;
-  token->input = input;
   return token;
 }
 
-Token *new_ident_token(char *name, char *input) {
-  Token *token = malloc(sizeof(Token));
-  token->ty = TK_IDENT;
+Token *new_token_ident(char *name, char *input) {
+  Token *token = new_token(TK_IDENT, input);
   token->name = name;
-  token->input = input;
   return token;
 }
 
@@ -121,14 +116,14 @@ void tokenize() {
 
     if (isdigit(*p)) {
       int val = strtol(p, &p, 10);
-      token = new_number_token(val, p);
+      token = new_token_number(val, p);
       vec_push(tokens, token);
       continue;
     }
 
     if (is_alnum(*p)) {
       char *name = strtoident(p, &p);
-      token = new_ident_token(name, p);
+      token = new_token_ident(name, p);
       vec_push(tokens, token);
       continue;
     }
