@@ -66,6 +66,7 @@ void program() {
 }
 
 Node *declare_function() {
+  expect(TK_INT);
   Node *node = new_node(ND_FUNCTION);
   node->name = ident();
 
@@ -77,10 +78,12 @@ Node *declare_function() {
   }
 
   int offset = 1;
+  expect(TK_INT);
   map_put(idents, ident(), (void *)(offset * 8));
   while (!consume(')')) {
     offset++;
     expect(',');
+    expect(TK_INT);
     map_put(idents, ident(), (void *)(offset * 8));
   }
 
