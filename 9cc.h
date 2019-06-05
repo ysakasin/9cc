@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -76,6 +77,7 @@ void tokenize();
 enum {
   ND_NUM = 256, // Number
   ND_IDENT,     // Identifier
+  ND_FUNCTION,  // Function declare
   ND_RETURN,    // return
   ND_IF,        // if
   ND_BLOCK,     // Block
@@ -97,6 +99,8 @@ typedef struct Node {
   Vector *stmts;
   char *name;
   Vector *args;
+  int params_len;
+  int stack_len;
 } Node;
 
 Node *new_node(int ty);
@@ -114,6 +118,7 @@ extern Map *idents;
 int consume(int ty);
 
 void program();
+Node *declare_function();
 Node *stmt();
 Node *expr();
 Node *assign();

@@ -44,6 +44,12 @@ static void expect(int ty) {
   }
 }
 
+char *ident() {
+  Token *token = tokens->data[pos];
+  expect(TK_IDENT);
+  return token->name;
+}
+
 int is_eof() {
   Token *t = tokens->data[pos];
   return t->ty == TK_EOF;
@@ -54,8 +60,38 @@ void program() {
   idents = new_map();
 
   while (!is_eof()) {
-    vec_push(code, stmt());
+    idents = new_map();
+    vec_push(code, declare_function());
   }
+}
+
+Node *declare_function() {
+  Node *node = new_node(ND_FUNCTION);
+  node->name = ident();
+
+  expect('(');
+  if (consume(')')) {
+    node->then = stmt();
+    node->stack_len = idents->keys->len;
+    return node;
+  }
+
+  int offset = 1;
+  map_put(idents, ident(), (void *)offset++);
+  while (!consume(')')) {
+    expect(',');
+    map_put(idents, ident(), (void *)offset++);
+  }
+
+  node->params_len = idents->keys->len;
+  if (idents->keys->len > 6) {
+    Token *before = tokens->data[pos - 1];
+    error_at(before->input, "No more than 6 parameters");
+  }
+
+  node->then = stmt();
+  node->stack_len = idents->keys->len;
+  return node;
 }
 
 Node *stmt() {

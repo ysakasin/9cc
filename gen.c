@@ -1,13 +1,42 @@
 #include "9cc.h"
 
+char reg[][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void gen_lval(Node *node) {
   if (node->ty != ND_IDENT) {
     error("lhs is not identifier");
   }
 
   printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", node->offset);
+  printf("  sub rax, %d\n", node->offset * 8);
   printf("  push rax\n");
+}
+
+void gen_function(Node *node) {
+  assert(node->ty == ND_FUNCTION);
+
+  printf("%s:\n", node->name);
+
+  // Prologue
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+
+  for (int i = 0; i < node->params_len; i++) {
+    printf("  push %s\n", reg[i]);
+  }
+
+  // allocate variables on stack
+  if (node->stack_len - node->params_len > 0) {
+    printf("  sub rsp, %d\n", (node->stack_len - node->params_len) * 8);
+  }
+
+  gen(node->then);
+
+  // Epilogue
+  printf("  pop rax\n");
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
+  printf("  ret\n");
 }
 
 int if_id;
@@ -26,9 +55,14 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == ND_FUNCTION) {
+    gen_function(node);
+    return;
+  }
+
   if (node->ty == ND_RETURN) {
     gen(node->lhs);
-    printf("  pop rax\n");
+    printf("  pop rax\n"); // Returned value
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
     printf("  ret\n");
@@ -38,7 +72,7 @@ void gen(Node *node) {
   if (node->ty == ND_IF) {
     int label = if_id++;
     gen(node->cond);
-    printf("  pop rax\n");
+    printf("  pop rax\n"); // condition
     printf("  cmp rax, 0\n");
 
     if (node->els == NULL) {
@@ -82,8 +116,6 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_CALL) {
-    char reg[][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
-
     for (int i = 0; i < node->args->len; i++) {
       gen(node->args->data[i]);
     }
@@ -102,14 +134,15 @@ void gen(Node *node) {
     printf("  sub rsp, rax\n");
 
     printf("  call %s\n", node->name);
+    printf("  push rax\n");
     return;
   }
 
   gen(node->lhs);
   gen(node->rhs);
 
-  printf("  pop rdi\n");
-  printf("  pop rax\n");
+  printf("  pop rdi\n"); // rhs
+  printf("  pop rax\n"); // lhs
 
   if (node->ty == '+') {
     printf("  add rax, rdi\n");
