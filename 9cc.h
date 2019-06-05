@@ -42,6 +42,7 @@ enum {
   TK_RETURN,    // return
   TK_IF,        // if
   TK_ELSE,      // else
+  TK_INT,       // int
   TK_EQ,        // ==
   TK_NE,        // !=
   TK_LE,        // <=
@@ -81,6 +82,7 @@ enum {
   ND_RETURN,    // return
   ND_IF,        // if
   ND_BLOCK,     // Block
+  ND_VARIABLE,  // Declare a local variable
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_LE,        // <=

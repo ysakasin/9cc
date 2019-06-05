@@ -77,10 +77,11 @@ Node *declare_function() {
   }
 
   int offset = 1;
-  map_put(idents, ident(), (void *)offset++);
+  map_put(idents, ident(), (void *)(offset * 8));
   while (!consume(')')) {
+    offset++;
     expect(',');
-    map_put(idents, ident(), (void *)offset++);
+    map_put(idents, ident(), (void *)(offset * 8));
   }
 
   node->params_len = idents->keys->len;
@@ -128,6 +129,22 @@ Node *stmt() {
     node->lhs = expr();
   } else {
     node = expr();
+  }
+
+  if (consume(TK_INT)) {
+    node = new_node(ND_VARIABLE);
+
+    Token *token = tokens->data[pos];
+    node->name = token->name;
+    expect(TK_IDENT);
+
+    int offset = (int)map_get(idents, node->name);
+    if (offset != 0) {
+      error_at(token->input, "It is already defined.");
+    }
+
+    offset = (idents->keys->len + 1) * 8;
+    map_put(idents, token->name, (void *)offset);
   }
 
   if (!consume(';')) {
@@ -262,8 +279,7 @@ Node *term() {
   if (t->ty == TK_IDENT) {
     int offset = (int)map_get(idents, t->name);
     if (offset == 0) {
-      offset = (idents->keys->len + 1) * 8;
-      map_put(idents, t->name, (void *)offset);
+      error_at(t->input, "undefined variable");
     }
 
     pos++;

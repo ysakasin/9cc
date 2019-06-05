@@ -105,6 +105,13 @@ void tokenize() {
       continue;
     }
 
+    if (strncmp(p, "int", 3) == 0 && !is_alnum(p[3])) {
+      token = new_token(TK_INT, p);
+      vec_push(tokens, token);
+      p += 3;
+      continue;
+    }
+
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
         *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';' ||
         *p == ',' || *p == '{' || *p == '}') {

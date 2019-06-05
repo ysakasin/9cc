@@ -1,6 +1,6 @@
 #include "9cc.h"
 
-char reg[][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+char reg[6][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node) {
   if (node->ty != ND_IDENT) {
@@ -8,7 +8,7 @@ void gen_lval(Node *node) {
   }
 
   printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", node->offset * 8);
+  printf("  sub rax, %d\n", node->offset);
   printf("  push rax\n");
 }
 
@@ -101,6 +101,10 @@ void gen(Node *node) {
       printf("  pop rax\n");
     }
     printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == ND_VARIABLE) {
     return;
   }
 
