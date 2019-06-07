@@ -33,6 +33,15 @@ void test_map();
 void runtest();
 
 // -------------------- //
+// Type
+// -------------------- //
+
+typedef struct Type {
+  enum { INT, PTR } ty;
+  struct Type *ptr_to;
+} Type;
+
+// -------------------- //
 // Token
 // -------------------- //
 
@@ -101,8 +110,12 @@ typedef struct Node {
   Vector *stmts;
   char *name;
   Vector *args;
+  Vector *params;
+  Vector *param_types;
   int params_len;
   int stack_len;
+  Type *ret_ty;
+  Type *var_ty;
 } Node;
 
 Node *new_node(int ty);

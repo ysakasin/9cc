@@ -3,6 +3,11 @@
 char reg[6][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node) {
+  if (node->ty == '*') {
+    gen(node->then);
+    return;
+  }
+
   if (node->ty != ND_IDENT) {
     error("lhs is not identifier");
   }
@@ -55,6 +60,19 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == '*') {
+    gen(node->then);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == '&') {
+    gen_lval(node->then);
+    return;
+  }
+
   if (node->ty == ND_FUNCTION) {
     gen_function(node);
     return;
@@ -100,11 +118,12 @@ void gen(Node *node) {
       gen(node->stmts->data[i]);
       printf("  pop rax\n");
     }
-    printf("  push rax\n");
+    printf("  push 0\n");
     return;
   }
 
   if (node->ty == ND_VARIABLE) {
+    printf("  push 0\n");
     return;
   }
 

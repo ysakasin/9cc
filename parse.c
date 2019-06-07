@@ -50,6 +50,34 @@ char *ident() {
   return token->name;
 }
 
+Type *ptr_to(Type *ty) {
+  Type *ptr = malloc(sizeof(Type));
+  ptr->ty = PTR;
+  ptr->ptr_to = ty;
+  return ptr;
+}
+
+Type *ty_int() {
+  Type *ty = malloc(sizeof(Type));
+  ty->ty = INT;
+  return ty;
+}
+
+Type *type() {
+  expect(TK_INT);
+  Type *ty = ty_int();
+
+  while (consume('*')) {
+    ty = ptr_to(ty);
+  }
+  return ty;
+}
+
+int is_type() {
+  Token *t = tokens->data[pos];
+  return t->ty == TK_INT;
+}
+
 int is_eof() {
   Token *t = tokens->data[pos];
   return t->ty == TK_EOF;
@@ -66,8 +94,11 @@ void program() {
 }
 
 Node *declare_function() {
-  expect(TK_INT);
   Node *node = new_node(ND_FUNCTION);
+  node->params = new_vector();
+  node->param_types = new_vector();
+
+  node->ret_ty = type();
   node->name = ident();
 
   expect('(');
@@ -78,13 +109,20 @@ Node *declare_function() {
   }
 
   int offset = 1;
-  expect(TK_INT);
-  map_put(idents, ident(), (void *)(offset * 8));
+  Type *param_type = type();
+  char *param = ident();
+  vec_push(node->params, param);
+  vec_push(node->param_types, param_type);
+  map_put(idents, param, (void *)(offset * 8));
   while (!consume(')')) {
     offset++;
     expect(',');
-    expect(TK_INT);
-    map_put(idents, ident(), (void *)(offset * 8));
+
+    param_type = type();
+    param = ident();
+    vec_push(node->params, param);
+    vec_push(node->param_types, param_type);
+    map_put(idents, param, (void *)(offset * 8));
   }
 
   node->params_len = idents->keys->len;
@@ -130,12 +168,13 @@ Node *stmt() {
   if (consume(TK_RETURN)) {
     node = new_node(ND_RETURN);
     node->lhs = expr();
-  } else {
-    node = expr();
+    expect(';');
+    return node;
   }
 
-  if (consume(TK_INT)) {
+  if (is_type()) {
     node = new_node(ND_VARIABLE);
+    node->var_ty = type();
 
     Token *token = tokens->data[pos];
     node->name = token->name;
@@ -148,12 +187,12 @@ Node *stmt() {
 
     offset = (idents->keys->len + 1) * 8;
     map_put(idents, token->name, (void *)offset);
+    expect(';');
+    return node;
   }
 
-  if (!consume(';')) {
-    Token *t = tokens->data[pos];
-    error_at(t->input, "Expected ';'");
-  }
+  node = expr();
+  expect(';');
   return node;
 }
 
@@ -233,6 +272,16 @@ Node *unary() {
   }
   if (consume('-')) {
     return new_node_binop('-', new_node_num(0), term());
+  }
+  if (consume('*')) {
+    Node *node = new_node('*');
+    node->then = unary();
+    return node;
+  }
+  if (consume('&')) {
+    Node *node = new_node('&');
+    node->then = unary();
+    return node;
   }
   return term();
 }
