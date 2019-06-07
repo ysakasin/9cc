@@ -41,7 +41,8 @@ char *strtoident(char *c, char **endptr) {
   }
 
   *endptr = (c + length);
-  return strndup(c, length);
+  char *res = calloc(length + 1, sizeof(char));
+  return strncpy(res, c, length);
 }
 
 void tokenize() {
