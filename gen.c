@@ -96,9 +96,7 @@ void gen(Node *node) {
     if (node->els == NULL) {
       printf("  je .Lend%d\n", label);
       gen(node->then);
-      printf("  pop rax\n");
       printf(".Lend%d:\n", label);
-      printf("  push rax\n");
       return;
     } else {
       printf("  je .Lelse%d\n", label);
@@ -116,14 +114,17 @@ void gen(Node *node) {
   if (node->ty == ND_BLOCK) {
     for (int i = 0; i < node->stmts->len; i++) {
       gen(node->stmts->data[i]);
-      printf("  pop rax\n");
     }
-    printf("  push 0\n");
     return;
   }
 
   if (node->ty == ND_VARIABLE) {
-    printf("  push 0\n");
+    return;
+  }
+
+  if (node->ty == ND_EXPR) {
+    gen(node->body);
+    printf("  pop rax\n");
     return;
   }
 

@@ -92,6 +92,7 @@ enum {
   ND_IF,        // if
   ND_BLOCK,     // Block
   ND_VARIABLE,  // Declare a local variable
+  ND_EXPR,      // Expression statement
   ND_EQ,        // ==
   ND_NE,        // !=
   ND_LE,        // <=
@@ -100,14 +101,24 @@ enum {
 
 typedef struct Node {
   int ty;
+
+  // Binary expression
   struct Node *lhs;
   struct Node *rhs;
+
+  // Identifier
   int val;
   int offset;
+
+  // if
   struct Node *cond;
   struct Node *then;
   struct Node *els;
+
+  // Block
   Vector *stmts;
+
+  // Function
   char *name;
   Vector *args;
   Vector *params;
@@ -116,6 +127,9 @@ typedef struct Node {
   int stack_len;
   Type *ret_ty;
   Type *var_ty;
+
+  // Expression statement
+  struct Node *body;
 } Node;
 
 Node *new_node(int ty);

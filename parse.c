@@ -191,7 +191,8 @@ Node *stmt() {
     return node;
   }
 
-  node = expr();
+  node = new_node(ND_EXPR);
+  node->body = expr();
   expect(';');
   return node;
 }
