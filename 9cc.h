@@ -41,6 +41,12 @@ typedef struct Type {
   struct Type *ptr_to;
 } Type;
 
+Type *ty_int();
+Type *ptr_to(Type *ty);
+int equals_type(Type *x, Type *y);
+int is_int(Type *ty);
+int is_ptr(Type *ty);
+
 // -------------------- //
 // Token
 // -------------------- //
@@ -101,6 +107,7 @@ enum {
 
 typedef struct Node {
   int ty;
+  Type *type;
 
   // Binary expression
   struct Node *lhs;
@@ -126,7 +133,6 @@ typedef struct Node {
   int params_len;
   int stack_len;
   Type *ret_ty;
-  Type *var_ty;
 
   // Expression statement
   struct Node *body;
@@ -135,10 +141,13 @@ typedef struct Node {
 Node *new_node(int ty);
 Node *new_node_binop(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
-Node *new_node_ident(int offset);
+Node *new_node_ident(int offset, Type *type);
+Type *binop_type(Node *node);
 
 extern Vector *code;
 extern Map *idents;
+extern Map *idents_type;
+extern Map *functions_type;
 
 // -------------------- //
 // Parser

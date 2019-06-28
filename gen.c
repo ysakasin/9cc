@@ -169,8 +169,34 @@ void gen(Node *node) {
   printf("  pop rax\n"); // lhs
 
   if (node->ty == '+') {
+    if (is_ptr(node->lhs->type)) { // ptr
+      printf("  push rax\n");
+      printf("  mov rax, rdi\n");
+      if (is_int(node->lhs->type->ptr_to)) {
+        printf("  mov rdi, 4\n");
+      } else { // ptr
+        assert(is_ptr(node->lhs->type->ptr_to));
+        printf("  mov rdi, 8\n");
+      }
+      printf("  imul rdi\n");
+      printf("  mov rdi, rax\n");
+      printf("  pop rax\n");
+    }
     printf("  add rax, rdi\n");
   } else if (node->ty == '-') {
+    if (is_ptr(node->lhs->type)) { // ptr
+      printf("  push rax\n");
+      printf("  mov rax, rdi\n");
+      if (is_int(node->lhs->type->ptr_to)) {
+        printf("  mov rdi, 4\n");
+      } else { // ptr
+        assert(is_ptr(node->lhs->type->ptr_to));
+        printf("  mov rdi, 8\n");
+      }
+      printf("  imul rdi\n");
+      printf("  mov rdi, rax\n");
+      printf("  pop rax\n");
+    }
     printf("  sub rax, rdi\n");
   } else if (node->ty == '*') {
     printf("  imul rdi\n");

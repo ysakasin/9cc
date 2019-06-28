@@ -2,6 +2,8 @@
 
 Vector *code;
 Map *idents;
+Map *idents_type;
+Map *functions_type;
 
 Node *new_node(int ty) {
   Node *node = calloc(1, sizeof(Node));
@@ -19,12 +21,14 @@ Node *new_node_binop(int ty, Node *lhs, Node *rhs) {
 Node *new_node_num(int val) {
   Node *node = new_node(ND_NUM);
   node->val = val;
+  node->type = ty_int();
   return node;
 }
 
-Node *new_node_ident(int offset) {
+Node *new_node_ident(int offset, Type *type) {
   Node *node = new_node(ND_IDENT);
   node->offset = offset;
+  node->type = type;
   return node;
 }
 
@@ -63,6 +67,10 @@ Type *ty_int() {
   return ty;
 }
 
+int is_int(Type *ty) { return ty->ty == INT; }
+
+int is_ptr(Type *ty) { return ty->ty == PTR; }
+
 Type *type() {
   expect(TK_INT);
   Type *ty = ty_int();
@@ -71,6 +79,24 @@ Type *type() {
     ty = ptr_to(ty);
   }
   return ty;
+}
+
+int equals_type(Type *x, Type *y) {
+  if (x == NULL || y == NULL) {
+    return 0;
+  }
+
+  if (x->ty != y->ty) {
+    return 0;
+  }
+
+  if (x->ty == INT) {
+    return 1;
+  }
+
+  assert(x->ty == PTR);
+  assert(y->ty == PTR);
+  return equals_type(x->ptr_to, y->ptr_to);
 }
 
 int is_type() {
@@ -86,6 +112,8 @@ int is_eof() {
 void program() {
   code = new_vector();
   idents = new_map();
+  idents_type = new_map();
+  functions_type = new_map();
 
   while (!is_eof()) {
     idents = new_map();
@@ -100,6 +128,8 @@ Node *declare_function() {
 
   node->ret_ty = type();
   node->name = ident();
+
+  map_put(functions_type, node->name, (void *)node->ret_ty);
 
   expect('(');
   if (consume(')')) {
@@ -174,7 +204,7 @@ Node *stmt() {
 
   if (is_type()) {
     node = new_node(ND_VARIABLE);
-    node->var_ty = type();
+    node->type = type();
 
     Token *token = tokens->data[pos];
     node->name = token->name;
@@ -187,6 +217,7 @@ Node *stmt() {
 
     offset = (idents->keys->len + 1) * 8;
     map_put(idents, token->name, (void *)offset);
+    map_put(idents_type, token->name, (void *)node->type);
     expect(';');
     return node;
   }
@@ -203,6 +234,8 @@ Node *assign() {
   Node *node = equality();
   if (consume('=')) {
     node = new_node_binop('=', node, assign());
+    // assert(equals_type(node->lhs->type, node->rhs->type));
+    node->type = node->lhs->type;
   }
   return node;
 }
@@ -213,8 +246,12 @@ Node *equality() {
   for (;;) {
     if (consume(TK_EQ)) {
       node = new_node_binop(ND_EQ, node, relational());
+      assert(equals_type(node->lhs->type, node->rhs->type));
+      node->type = ty_int();
     } else if (consume(TK_NE)) {
       node = new_node_binop(ND_NE, node, relational());
+      assert(equals_type(node->lhs->type, node->rhs->type));
+      node->type = ty_int();
     } else {
       return node;
     }
@@ -227,12 +264,20 @@ Node *relational() {
   for (;;) {
     if (consume('<')) {
       node = new_node_binop('<', node, add());
+      assert(equals_type(node->lhs->type, node->rhs->type));
+      node->type = ty_int();
     } else if (consume(TK_LE)) {
       node = new_node_binop(ND_LE, node, add());
+      assert(equals_type(node->lhs->type, node->rhs->type));
+      node->type = ty_int();
     } else if (consume('>')) {
       node = new_node_binop('<', add(), node);
+      assert(equals_type(node->lhs->type, node->rhs->type));
+      node->type = ty_int();
     } else if (consume(TK_GE)) {
       node = new_node_binop(ND_LE, add(), node);
+      assert(equals_type(node->lhs->type, node->rhs->type));
+      node->type = ty_int();
     } else {
       return node;
     }
@@ -243,10 +288,29 @@ Node *add() {
   Node *node = mul();
 
   for (;;) {
+    Token *t = tokens->data[pos];
     if (consume('+')) {
       node = new_node_binop('+', node, mul());
+      if (is_int(node->lhs->type) && is_int(node->rhs->type)) {
+        node->type = ty_int();
+      } else if (is_int(node->lhs->type)) {
+        node->type = node->rhs->type;
+      } else if (is_int(node->rhs->type)) {
+        node->type = node->lhs->type;
+      } else {
+        error_at(t->input, "Unexpected type");
+      }
     } else if (consume('-')) {
       node = new_node_binop('-', node, mul());
+      if (is_int(node->lhs->type) && is_int(node->rhs->type)) {
+        node->type = ty_int();
+      } else if (is_int(node->lhs->type)) {
+        node->type = node->rhs->type;
+      } else if (is_int(node->rhs->type)) {
+        node->type = node->lhs->type;
+      } else {
+        error_at(t->input, "Unexpected type");
+      }
     } else {
       return node;
     }
@@ -259,8 +323,14 @@ Node *mul() {
   for (;;) {
     if (consume('*')) {
       node = new_node_binop('*', node, unary());
+      assert(is_int(node->lhs->type));
+      assert(is_int(node->rhs->type));
+      node->type = ty_int();
     } else if (consume('/')) {
       node = new_node_binop('/', node, unary());
+      assert(is_int(node->lhs->type));
+      assert(is_int(node->rhs->type));
+      node->type = ty_int();
     } else {
       return node;
     }
@@ -275,13 +345,21 @@ Node *unary() {
     return new_node_binop('-', new_node_num(0), term());
   }
   if (consume('*')) {
+    Token *t = tokens->data[pos];
     Node *node = new_node('*');
     node->then = unary();
+
+    if (node->then->type->ty != PTR) {
+      error_at(t->input, "It is not pointer");
+    }
+
+    node->type = node->then->type->ptr_to;
     return node;
   }
   if (consume('&')) {
     Node *node = new_node('&');
     node->then = unary();
+    node->type = ptr_to(node->then->type);
     return node;
   }
   return term();
@@ -309,6 +387,7 @@ Node *term() {
   if (t->ty == TK_IDENT && peek->ty == '(') {
     Node *node = new_node(ND_CALL);
     node->name = t->name;
+    node->type = map_get(functions_type, t->name);
     node->args = new_vector();
     pos += 2;
 
@@ -331,12 +410,13 @@ Node *term() {
 
   if (t->ty == TK_IDENT) {
     int offset = (int)map_get(idents, t->name);
+    Type *type = (Type *)map_get(idents_type, t->name);
     if (offset == 0) {
       error_at(t->input, "undefined variable");
     }
 
     pos++;
-    return new_node_ident(offset);
+    return new_node_ident(offset, type);
   }
 
   error_at(t->input, "Expect '(' or number");
