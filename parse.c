@@ -3,6 +3,7 @@
 Vector *code;
 Map *idents;
 Map *idents_type;
+int stack_offset;
 Map *functions_type;
 
 Node *new_node(int ty) {
@@ -67,9 +68,41 @@ Type *ty_int() {
   return ty;
 }
 
+Type *array_of(Type *ty, int size) {
+  Type *arr = malloc(sizeof(Type));
+  arr->ty = ARRAY;
+  arr->ptr_to = ty;
+  arr->array_size = size;
+  return arr;
+}
+
 int is_int(Type *ty) { return ty->ty == INT; }
 
 int is_ptr(Type *ty) { return ty->ty == PTR; }
+
+int is_array(Type *ty) { return ty->ty == ARRAY; }
+
+int get_words(Type *ty) {
+  if (is_int(ty) || is_ptr(ty)) {
+    return 1;
+  } else if (is_array(ty)) {
+    return (get_bytes(ty) + 7) / 8;
+  }
+  error("Can not get word of (%d)", ty->ty);
+  return 0;
+}
+
+int get_bytes(Type *ty) {
+  if (is_int(ty)) {
+    return 4;
+  } else if (is_ptr(ty)) {
+    return 8;
+  } else if (is_array(ty)) {
+    return get_bytes(ty->ptr_to) * ty->array_size;
+  }
+  error("Can not get byte of (%d)", ty->ty);
+  return 0;
+}
 
 Type *type() {
   expect(TK_INT);
@@ -109,14 +142,19 @@ int is_eof() {
   return t->ty == TK_EOF;
 }
 
+Node *number();
+
 void program() {
   code = new_vector();
   idents = new_map();
   idents_type = new_map();
+  stack_offset = 1;
   functions_type = new_map();
 
   while (!is_eof()) {
     idents = new_map();
+    idents_type = new_map();
+    stack_offset = 1;
     vec_push(code, declare_function());
   }
 }
@@ -138,21 +176,20 @@ Node *declare_function() {
     return node;
   }
 
-  int offset = 1;
   Type *param_type = type();
   char *param = ident();
   vec_push(node->params, param);
   vec_push(node->param_types, param_type);
-  map_put(idents, param, (void *)(offset * 8));
+  map_put(idents, param, (void *)(stack_offset * 8));
   while (!consume(')')) {
-    offset++;
+    stack_offset++;
     expect(',');
 
     param_type = type();
     param = ident();
     vec_push(node->params, param);
     vec_push(node->param_types, param_type);
-    map_put(idents, param, (void *)(offset * 8));
+    map_put(idents, param, (void *)(stack_offset * 8));
   }
 
   node->params_len = idents->keys->len;
@@ -210,12 +247,18 @@ Node *stmt() {
     node->name = token->name;
     expect(TK_IDENT);
 
-    int offset = (int)map_get(idents, node->name);
-    if (offset != 0) {
+    if (consume('[')) {
+      Node *size = number();
+      node->type = array_of(node->type, size->val);
+      expect(']');
+    }
+
+    if (map_exist(idents, node->name)) {
       error_at(token->input, "It is already defined.");
     }
 
-    offset = (idents->keys->len + 1) * 8;
+    int offset = stack_offset;
+    stack_offset += get_words(node->type);
     map_put(idents, token->name, (void *)offset);
     map_put(idents_type, token->name, (void *)node->type);
     expect(';');
@@ -365,7 +408,7 @@ Node *unary() {
   if (consume(TK_SIZEOF)) {
     Node *arg = unary();
 
-    int size = is_int(arg->type) ? 4 : 8;
+    int size = get_bytes(arg->type);
     Node *node = new_node_num(size);
     return node;
   }
@@ -428,4 +471,14 @@ Node *term() {
 
   error_at(t->input, "Expect '(' or number");
   return NULL; // Can not reach here
+}
+
+Node *number() {
+  Token *t = tokens->data[pos];
+  if (t->ty != TK_NUM) {
+    error_at(t->input, "Expected number");
+  }
+
+  pos++;
+  return new_node_num(t->val);
 }

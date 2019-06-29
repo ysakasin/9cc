@@ -66,6 +66,11 @@ void *map_get(Map *map, char *key) {
   return NULL;
 }
 
+int map_exist(Map *map, char *key) {
+  void *p = map_get(map, key);
+  return p != NULL;
+}
+
 void test_map() {
   Map *map = new_map();
   expect(__LINE__, 0, (long)map_get(map, "foo"));

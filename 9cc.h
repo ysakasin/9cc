@@ -28,6 +28,7 @@ typedef struct {
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
+int map_exist(Map *map, char *key);
 void test_map();
 
 void runtest();
@@ -37,15 +38,20 @@ void runtest();
 // -------------------- //
 
 typedef struct Type {
-  enum { INT, PTR } ty;
+  enum { INT, PTR, ARRAY } ty;
   struct Type *ptr_to;
+  int array_size;
 } Type;
 
 Type *ty_int();
 Type *ptr_to(Type *ty);
+Type *array_of(Type *ty, int size);
 int equals_type(Type *x, Type *y);
 int is_int(Type *ty);
 int is_ptr(Type *ty);
+int is_array(Type *ty);
+int get_words(Type *ty);
+int get_bytes(Type *ty);
 
 // -------------------- //
 // Token
