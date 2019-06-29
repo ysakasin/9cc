@@ -362,6 +362,13 @@ Node *unary() {
     node->type = ptr_to(node->then->type);
     return node;
   }
+  if (consume(TK_SIZEOF)) {
+    Node *arg = unary();
+
+    int size = is_int(arg->type) ? 4 : 8;
+    Node *node = new_node_num(size);
+    return node;
+  }
   return term();
 }
 

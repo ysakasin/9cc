@@ -57,6 +57,7 @@ enum {
   TK_RETURN,    // return
   TK_IF,        // if
   TK_ELSE,      // else
+  TK_SIZEOF,    // sizeof
   TK_INT,       // int
   TK_EQ,        // ==
   TK_NE,        // !=

@@ -106,6 +106,13 @@ void tokenize() {
       continue;
     }
 
+    if (strncmp(p, "sizeof", 6) == 0 && !is_alnum(p[6])) {
+      token = new_token(TK_SIZEOF, p);
+      vec_push(tokens, token);
+      p += 6;
+      continue;
+    }
+
     if (strncmp(p, "int", 3) == 0 && !is_alnum(p[3])) {
       token = new_token(TK_INT, p);
       vec_push(tokens, token);
