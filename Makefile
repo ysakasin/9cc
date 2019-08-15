@@ -7,6 +7,13 @@ OBJS=$(SRCS:.c=.o)
 
 $(OBJS): 9cc.h
 
+.PHONY: test clean run
+
+run:
+	scp tmp.s vps:~/
+	ssh vps gcc -o tmp tmp.s
+	ssh vps ./tmp
+
 test: 9cc
 	./9cc -test
 	./test.sh
