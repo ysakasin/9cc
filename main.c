@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   }
 
   user_input = argv[1];
-  tokenize();
+  Token *tok = tokenize(user_input);
 
   program();
 

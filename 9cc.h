@@ -57,77 +57,71 @@ int get_bytes(Type *ty);
 // Token
 // -------------------- //
 
-enum {
-  TK_NUM = 256, // Number
-  TK_IDENT,     // Identifier
-  TK_RETURN,    // return
-  TK_IF,        // if
-  TK_ELSE,      // else
-  TK_SIZEOF,    // sizeof
-  TK_INT,       // int
-  TK_EQ,        // ==
-  TK_NE,        // !=
-  TK_LE,        // <=
-  TK_GE,        // >=
-  TK_EOF,       // End of file
+typedef enum {
+  TK_RESERVED, // 予約語と記号
+  TK_IDENT,    // Identifier
+  TK_NUM,      // 数字
+  TK_EOF,      // End of file
+} TokenKind;
+
+typedef struct Token Token;
+struct Token {
+  TokenKind kind; // トークンの型
+  Token *next;    // 次の入力トークン
+  int val;        // kindがTK_NUMの場合、その数値
+  char *str;      // トークン文字列
+  int len;        // トークン文字列の長さ
 };
 
-typedef struct {
-  int ty;
-  int val;
-  char *name;
-  char *input;
-} Token;
-
-Token *new_token(int ty, char *input);
-Token *new_token_number(int val, char *input);
-Token *new_token_ident(char *name, char *input);
-
-extern Vector *tokens;
-extern int pos;
 extern char *user_input;
 
 // -------------------- //
 // Lexer
 // -------------------- //
 
-void tokenize();
+Token *tokenize(char *p);
 
 // -------------------- //
 // Node
 // -------------------- //
 
-enum {
-  ND_NUM = 256, // Number
-  ND_IDENT,     // Identifier
-  ND_FUNCTION,  // Function declare
-  ND_RETURN,    // return
-  ND_IF,        // if
-  ND_BLOCK,     // Block
-  ND_VARIABLE,  // Declare a local variable
-  ND_EXPR,      // Expression statement
-  ND_EQ,        // ==
-  ND_NE,        // !=
-  ND_LE,        // <=
+typedef enum {
+  ND_ADD,      // +
+  ND_SUB,      // -
+  ND_MUL,      // *
+  ND_DIV,      // /
+  ND_NUM,      // Number
+  ND_IDENT,    // Identifier
+  ND_FUNCTION, // Function declare
+  ND_RETURN,   // return
+  ND_IF,       // if
+  ND_BLOCK,    // Block
+  ND_VARIABLE, // Declare a local variable
+  ND_EXPR,     // Expression statement
+  ND_EQ,       // ==
+  ND_NE,       // !=
+  ND_LT,       // <
+  ND_LE,       // <=
   ND_CALL,
-};
+} NodeKind;
 
-typedef struct Node {
+typedef struct Node Node;
+struct Node {
   int ty;
   Type *type;
 
   // Binary expression
-  struct Node *lhs;
-  struct Node *rhs;
+  Node *lhs;
+  Node *rhs;
 
   // Identifier
   int val;
   int offset;
 
   // if
-  struct Node *cond;
-  struct Node *then;
-  struct Node *els;
+  Node *cond;
+  Node *then;
+  Node *els;
 
   // Block
   Vector *stmts;
@@ -143,7 +137,7 @@ typedef struct Node {
 
   // Expression statement
   struct Node *body;
-} Node;
+};
 
 Node *new_node(int ty);
 Node *new_node_binop(int ty, Node *lhs, Node *rhs);

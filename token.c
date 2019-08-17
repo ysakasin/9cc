@@ -6,147 +6,83 @@
 
 #include "9cc.h"
 
-Token *new_token(int ty, char *input) {
+Token *new_token(TokenKind kind, Token *next, char *str, int len) {
   Token *token = calloc(1, sizeof(Token));
-  token->ty = ty;
-  token->input = input;
+  token->kind = kind;
+  token->next = next;
+  token->str = str;
+  token->len = len;
   return token;
 }
-
-Token *new_token_number(int val, char *input) {
-  Token *token = new_token(TK_NUM, input);
-  token->val = val;
-  return token;
-}
-
-Token *new_token_ident(char *name, char *input) {
-  Token *token = new_token(TK_IDENT, input);
-  token->name = name;
-  return token;
-}
-
-Vector *tokens;
-int pos;
-char *user_input;
 
 int is_alnum(char c) {
   return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
          ('0' <= c && c <= '9') || (c == '_');
 }
 
-char *strtoident(char *c, char **endptr) {
-  int length = 0;
-  while (is_alnum(*(c + length))) {
-    length++;
+char *starts_with_keyword(char *p) {
+  static char *kw[] = {"return", "if", "else", "where", "for", "sizeof", "int"};
+
+  for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
+    int len = strlen(kw[i]);
+    if (strncmp(p, kw[i], len) == 0 && !isalnum(p[len])) {
+      return kw[i];
+    }
   }
 
-  *endptr = (c + length);
-  char *res = calloc(length + 1, sizeof(char));
-  return strncpy(res, c, length);
+  return NULL;
 }
 
-void tokenize() {
-  char *p = user_input;
-  Token *token;
+Token *tokenize(char *p) {
+  Token head;
+  head.next = NULL;
+  Token *cur = &head;
 
-  tokens = new_vector();
   while (*p) {
-    // skip blank character
     if (isspace(*p)) {
       p++;
       continue;
     }
 
-    if (strncmp(p, "==", 2) == 0) {
-      token = new_token(TK_EQ, p);
-      vec_push(tokens, token);
+    char *kw = starts_with_keyword(p);
+    if (kw) {
+      int len = strlen(kw);
+      cur = new_token(TK_RESERVED, cur, p, len);
+      p += len;
+      continue;
+    }
+
+    if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
+        strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
+      cur = new_token(TK_RESERVED, cur, p, 2);
       p += 2;
       continue;
     }
 
-    if (strncmp(p, "!=", 2) == 0) {
-      token = new_token(TK_NE, p);
-      vec_push(tokens, token);
-      p += 2;
-      continue;
-    }
-
-    if (strncmp(p, "<=", 2) == 0) {
-      token = new_token(TK_LE, p);
-      vec_push(tokens, token);
-      p += 2;
-      continue;
-    }
-
-    if (strncmp(p, ">=", 2) == 0) {
-      token = new_token(TK_GE, p);
-      vec_push(tokens, token);
-      p += 2;
-      continue;
-    }
-
-    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
-      token = new_token(TK_RETURN, p);
-      vec_push(tokens, token);
-      p += 6;
-      continue;
-    }
-
-    if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
-      token = new_token(TK_IF, p);
-      vec_push(tokens, token);
-      p += 2;
-      continue;
-    }
-
-    if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
-      token = new_token(TK_ELSE, p);
-      vec_push(tokens, token);
-      p += 4;
-      continue;
-    }
-
-    if (strncmp(p, "sizeof", 6) == 0 && !is_alnum(p[6])) {
-      token = new_token(TK_SIZEOF, p);
-      vec_push(tokens, token);
-      p += 6;
-      continue;
-    }
-
-    if (strncmp(p, "int", 3) == 0 && !is_alnum(p[3])) {
-      token = new_token(TK_INT, p);
-      vec_push(tokens, token);
-      p += 3;
-      continue;
-    }
-
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
-        *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';' ||
-        *p == ',' || *p == '{' || *p == '}' || *p == '[' || *p == ']' ||
-        *p == '&') {
-      token = new_token(*p, p);
-      vec_push(tokens, token);
+    if (strchr("+-*/()<>=;,{}[]&", *p)) {
+      cur = new_token(TK_RESERVED, cur, p, 1);
       p++;
       continue;
     }
 
     if (isdigit(*p)) {
-      int val = strtol(p, &p, 10);
-      token = new_token_number(val, p);
-      vec_push(tokens, token);
+      char *q = p;
+      cur = new_token(TK_NUM, cur, p, 0);
+      cur->val = strtol(p, &p, 10);
+      cur->len = p - q;
       continue;
     }
 
     if (is_alnum(*p)) {
-      char *name = strtoident(p, &p);
-      token = new_token_ident(name, p);
-      vec_push(tokens, token);
+      char *q = p;
+      while (is_alnum(*p))
+        p++;
+      cur = new_token(TK_IDENT, cur, q, p - q);
       continue;
     }
 
     error_at(p, "Can not tokenize");
   }
 
-  token = new_token(TK_EOF, p);
-  vec_push(tokens, token);
+  return head.next;
 }
