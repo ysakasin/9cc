@@ -153,6 +153,8 @@ Token *tokenize(char *p) {
 typedef enum {
   ND_EQ,  // ==
   ND_NEQ, // !=
+  ND_LT,  // <
+  ND_LE,  // <=
   ND_ADD, // +
   ND_SUB, // -
   ND_MUL, // *
@@ -224,7 +226,20 @@ Node *equality() {
 }
 
 Node *relational() {
-  return add();
+  Node *node = add();
+
+  for (;;) {
+    if (consume("<"))
+      node = new_node_binop(ND_LT, node, add());
+    else if (consume("<="))
+      node = new_node_binop(ND_LE, node, add());
+    else if (consume(">"))
+      node = new_node_binop(ND_LT, add(), node);
+    else if (consume(">="))
+      node = new_node_binop(ND_LE, add(), node);
+    else
+      return node;
+  }
 }
 
 Node *add() {
@@ -292,6 +307,16 @@ void gen(Node *node) {
   case ND_NEQ:
     printf("  cmp rax, rdi\n");
     printf("  setne al\n");
+    printf("  movzb rax, al\n");
+    break;
+  case ND_LT:
+    printf("  cmp rax, rdi\n");
+    printf("  setl al\n");
+    printf("  movzb rax, al\n");
+    break;
+  case ND_LE:
+    printf("  cmp rax, rdi\n");
+    printf("  setle al\n");
     printf("  movzb rax, al\n");
     break;
   case ND_ADD:
