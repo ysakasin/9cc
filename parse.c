@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "9cc.h"
 
 Node *new_node(NodeKind kind) {
@@ -26,6 +28,25 @@ Node *new_node_lvar(int offset) {
   return node;
 }
 
+LVar *locals;
+
+LVar *find_lvar(Token *tok) {
+  for (LVar *var = locals; var; var = var->next)
+    if (var->len == tok->len && strncmp(var->name, tok->str, var->len) == 0)
+      return var;
+  return NULL;
+}
+
+LVar *append_lvar(Token *tok) {
+  LVar *var = calloc(1, sizeof(LVar));
+  var->next = locals;
+  var->name = tok->str;
+  var->len = tok->len;
+  var->offset = locals->offset + 8;
+  locals = var;
+  return var;
+}
+
 /* Grammar
 program    = stmt*
 stmt       = expr ";"
@@ -42,6 +63,8 @@ primary    = num | ident | "(" expr ")"
 Node *code[100];
 
 void program() {
+  locals = calloc(1, sizeof(LVar));
+
   int i = 0;
   while (!at_eof())
     code[i++] = stmt();
@@ -138,8 +161,11 @@ Node *primary() {
 
   Token *tok = consume_ident();
   if (tok) {
-    int offset = (tok->str[0] - 'a' + 1) * 8;
-    return new_node_lvar(offset);
+    LVar *var = find_lvar(tok);
+    if (var == NULL) {
+      var = append_lvar(tok);
+    }
+    return new_node_lvar(var->offset);
   }
 
   return new_node_num(expect_number());

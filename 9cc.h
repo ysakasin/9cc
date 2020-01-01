@@ -88,6 +88,21 @@ Node *unary();
 Node *primary();
 
 //
+// Variable
+//
+
+typedef struct LVar LVar;
+
+struct LVar {
+  LVar *next; // 次の変数
+  char *name; // 変数の名前
+  int len;    // 変数名の長さ
+  int offset; // RBPからのオフセット
+};
+
+extern LVar *locals;
+
+//
 // Code generator
 //
 
