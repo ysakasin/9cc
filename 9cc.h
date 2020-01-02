@@ -47,6 +47,7 @@ Token *tokenize(char *p);
 //
 
 typedef enum {
+  ND_RETURN,
   ND_ASSIGN, // =
   ND_EQ,     // ==
   ND_NEQ,    // !=
@@ -106,4 +107,5 @@ extern LVar *locals;
 // Code generator
 //
 
+void gen_epilogue();
 void gen(Node *node);

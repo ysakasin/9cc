@@ -50,6 +50,7 @@ LVar *append_lvar(Token *tok) {
 /* Grammar
 program    = stmt*
 stmt       = expr ";"
+           | "return" expr ";"
 expr       = assign
 assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
@@ -72,7 +73,14 @@ void program() {
 }
 
 Node *stmt() {
-  Node *node = expr();
+  Node *node;
+  if (consume("return")) {
+    node = new_node(ND_RETURN);
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
+
   expect(";");
   return node;
 }

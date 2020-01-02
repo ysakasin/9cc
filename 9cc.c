@@ -59,10 +59,6 @@ int main(int argc, char **argv) {
   }
 
   // エピローグ
-  // ローカル変数の領域を解放する
-  printf("  mov rsp, rbp\n");
-  printf("  pop rbp\n");
-  // 最後の式の結果がRAXに残っているのでそれが返り値になる
-  printf("  ret\n");
+  gen_epilogue();
   return 0;
 }

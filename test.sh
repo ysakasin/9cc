@@ -48,5 +48,7 @@ try 3 'a=4; a-1;'
 try 11 'a=5+6; a;'
 try 21 'a = b = 5+6; b = b - 1; a + b;'
 try 6 'foo = 1; bar = 2 + 3; foo + bar;'
+try 5 'return 5; return 8; 10;'
+try 14 'a = 3; b = 5 * 6 - 8; return a + b / 2; 100;'
 
 echo OK

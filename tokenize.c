@@ -70,6 +70,10 @@ int reserved(char *p) {
   return 0;
 }
 
+bool is_alnum(char c) {
+  return isalnum(c) || c == '_';
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p) {
   Token head;
@@ -88,6 +92,13 @@ Token *tokenize(char *p) {
       cur = new_token(TK_RESERVED, cur, p);
       cur->len = len;
       p += len;
+      continue;
+    }
+
+    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+      cur = new_token(TK_RESERVED, cur, p);
+      cur->len = 6;
+      p += 6;
       continue;
     }
 

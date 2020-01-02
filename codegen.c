@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include "9cc.h"
 
+void gen_epilogue() {
+  // ローカル変数の領域を解放する
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
+  // 最後の式の結果がRAXに残っているのでそれが返り値になる
+  printf("  ret\n");
+}
+
 // ローカル変数があるスタックの位置をスタックに格納
 void gen_lvar(Node *node) {
   if (node->kind != ND_LVAR)
@@ -29,6 +37,11 @@ void gen(Node *node) {
     printf("  pop rax\n");
     printf("  mov [rax], rdi\n"); // スタックのraxの位置に値rdiを格納
     printf("  push rdi\n");
+    return;
+  case ND_RETURN:
+    gen(node->lhs);
+    printf("  pop rax\n");
+    gen_epilogue();
     return;
   }
 
