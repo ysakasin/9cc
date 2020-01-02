@@ -109,6 +109,20 @@ Node *stmt() {
     return node;
   }
 
+  if (consume("{")) {
+    Node head = {};
+    Node *cur = &head;
+
+    while (!consume("}")) {
+      cur->next = stmt();
+      cur = cur->next;
+    }
+
+    node = new_node(ND_BLOCK);
+    node->body = head.next;
+    return node;
+  }
+
   if (consume("return")) {
     node = new_node(ND_RETURN);
     node->lhs = expr();

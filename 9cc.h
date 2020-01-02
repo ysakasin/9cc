@@ -51,6 +51,7 @@ typedef enum {
   ND_IF,
   ND_WHILE,
   ND_FOR,
+  ND_BLOCK,
   ND_EXPR_STMT,
   ND_ASSIGN, // =
   ND_EQ,     // ==
@@ -78,6 +79,8 @@ struct Node {
   Node *els;  // ND_IF
   Node *init; // ND_FOR
   Node *post; // ND_FOR
+  Node *body; // ND_BLOCK
+  Node *next; // ND_BLOCK
 };
 
 Node *new_node(NodeKind kind);

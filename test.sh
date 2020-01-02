@@ -56,5 +56,6 @@ try 4 'a = 1; if (a == 1) a = 4; else a = 2; a;'
 try 2 'a = 3; if (a == 1) a = 4; else a = 2; a;'
 try 11 'a = 1; while (a < 10) a = a + 2; return a;'
 try 55 'a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
+try 11 'a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
 
 echo OK
