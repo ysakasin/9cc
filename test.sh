@@ -54,5 +54,6 @@ try 4 'a = 1; if (a == 1) a = 4; a;'
 try 3 'a = 3; if (a == 1) a = 4; a;'
 try 4 'a = 1; if (a == 1) a = 4; else a = 2; a;'
 try 2 'a = 3; if (a == 1) a = 4; else a = 2; a;'
+try 11 'a = 1; while (a < 10) a = a + 2; return a;'
 
 echo OK

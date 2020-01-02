@@ -49,6 +49,7 @@ Token *tokenize(char *p);
 typedef enum {
   ND_RETURN,
   ND_IF,
+  ND_WHILE,
   ND_EXPR_STMT,
   ND_ASSIGN, // =
   ND_EQ,     // ==
