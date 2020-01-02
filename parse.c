@@ -96,6 +96,19 @@ Node *stmt() {
     return node;
   }
 
+  if (consume("for")) {
+    node = new_node(ND_FOR);
+    expect("(");
+    node->init = expr();
+    expect(";");
+    node->cond = expr();
+    expect(";");
+    node->post = expr();
+    expect(")");
+    node->then = stmt();
+    return node;
+  }
+
   if (consume("return")) {
     node = new_node(ND_RETURN);
     node->lhs = expr();
