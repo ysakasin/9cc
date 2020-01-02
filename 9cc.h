@@ -48,6 +48,8 @@ Token *tokenize(char *p);
 
 typedef enum {
   ND_RETURN,
+  ND_IF,
+  ND_EXPR_STMT,
   ND_ASSIGN, // =
   ND_EQ,     // ==
   ND_NEQ,    // !=
@@ -69,6 +71,9 @@ struct Node {
   Node *rhs;
   int val;    // ND_NUM
   int offset; // ND_LVAR
+  Node *cond; // ND_IF
+  Node *then; // ND_IF
+  Node *els;  // ND_IF
 };
 
 Node *new_node(NodeKind kind);

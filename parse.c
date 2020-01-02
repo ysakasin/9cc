@@ -51,6 +51,7 @@ LVar *append_lvar(Token *tok) {
 program    = stmt*
 stmt       = expr ";"
            | "return" expr ";"
+           | "if" "(" expr ")" stmt ("else" stmt)?
 expr       = assign
 assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)*
@@ -74,11 +75,24 @@ void program() {
 
 Node *stmt() {
   Node *node;
+
+  if (consume("if")){
+    node = new_node(ND_IF);
+    expect("(");
+    node->cond = expr();
+    expect(")");
+    node->then = stmt();
+    if (consume("else"))
+      node->els = stmt();
+    return node;
+  }
+
   if (consume("return")) {
     node = new_node(ND_RETURN);
     node->lhs = expr();
   } else {
-    node = expr();
+    node = new_node(ND_EXPR_STMT);
+    node->lhs = expr();
   }
 
   expect(";");
