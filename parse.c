@@ -59,7 +59,9 @@ relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 add        = mul ("+" mul | "-" mul)*
 mul        = unary ("*" unary | "/" unary)*
 unary      = ("+" | "-")? primary
-primary    = num | ident | "(" expr ")"
+primary    = num
+           | ident ("(" ")")?
+           | "(" expr ")"
 */
 
 Node *code[100];
@@ -219,6 +221,14 @@ Node *primary() {
 
   Token *tok = consume_ident();
   if (tok) {
+    if (consume("(")) {
+      Node *node = new_node(ND_CALL);
+      node->name = calloc(tok->len, sizeof(char));
+      strncpy(node->name, tok->str, tok->len);
+      expect(")");
+      return node;
+    }
+
     LVar *var = find_lvar(tok);
     if (var == NULL) {
       var = append_lvar(tok);

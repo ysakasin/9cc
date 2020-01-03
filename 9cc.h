@@ -64,6 +64,7 @@ typedef enum {
   ND_DIV,    // /
   ND_LVAR,   // ローカル変数
   ND_NUM,    // 整数
+  ND_CALL,   // 関数呼び出し
 } NodeKind;
 
 typedef struct Node Node;
@@ -81,6 +82,7 @@ struct Node {
   Node *post; // ND_FOR
   Node *body; // ND_BLOCK
   Node *next; // ND_BLOCK
+  char *name; // ND_CALL
 };
 
 Node *new_node(NodeKind kind);
