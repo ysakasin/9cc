@@ -16,6 +16,22 @@ try() {
   fi
 }
 
+try_stdout() {
+  expected="$1"
+  input="$2"
+
+  ./9cc "$input" > tmp.s
+  gcc -o tmp tmp.s foo.o
+  actual=`./tmp`
+
+  if [ "$actual" = "$expected" ]; then
+    echo "$input => $actual"
+  else
+    echo "$input => $expected expected, but got $actual"
+    exit 1
+  fi
+}
+
 try 0 '0;'
 try 42 '42;'
 try 21 '5+20-4;'
@@ -57,5 +73,9 @@ try 2 'a = 3; if (a == 1) a = 4; else a = 2; a;'
 try 11 'a = 1; while (a < 10) a = a + 2; return a;'
 try 55 'a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
 try 11 'a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
+
+try_stdout "OK" 'foo();'
+try_stdout "10" 'bar(4, 1+5);'
+try_stdout "100" 'baz(2*50);'
 
 echo OK

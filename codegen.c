@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "9cc.h"
 
+static const char *call_reg[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void gen_epilogue() {
   // ローカル変数の領域を解放する
   printf("  mov rsp, rbp\n");
@@ -97,9 +99,32 @@ void gen(Node *node) {
     gen(node->lhs);
     printf("  pop rax\n");
     return;
-  case ND_CALL:
+  case ND_CALL: {
+    int len = 0;
+    for (Node *cur = node->args; cur; cur = cur->next) {
+      gen(cur);
+      len++;
+    }
+
+    for (int i = len - 1; i >= 0; i--)
+      printf("  pop %s\n", call_reg[i]);
+
+    // rspを16の倍数に揃えてから呼び出す
+    printf("  mov rax, rsp\n");
+    printf("  and rax, 15\n");
+    printf("  jnz .L.call%p\n", node);
+    printf("  mov rax, 0\n");
     printf("  call %s\n", node->name);
+    printf("  jmp .L.end%p\n", node);
+    printf(".L.call%p:\n", node);
+    printf("  sub rsp, 8\n");
+    printf("  mov rax, 0\n");
+    printf("  call %s\n", node->name);
+    printf("  add rsp, 8\n");
+    printf(".L.end%p:\n", node);
+    printf("  push rax\n");
     return;
+  }
   }
 
   gen(node->lhs);

@@ -81,8 +81,9 @@ struct Node {
   Node *init; // ND_FOR
   Node *post; // ND_FOR
   Node *body; // ND_BLOCK
-  Node *next; // ND_BLOCK
+  Node *next; // ND_BLOCK, ND_CALL
   char *name; // ND_CALL
+  Node *args; // ND_CALL
 };
 
 Node *new_node(NodeKind kind);
@@ -101,6 +102,7 @@ Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
+Node *arguments();
 
 //
 // Variable

@@ -225,7 +225,7 @@ Node *primary() {
       Node *node = new_node(ND_CALL);
       node->name = calloc(tok->len, sizeof(char));
       strncpy(node->name, tok->str, tok->len);
-      expect(")");
+      node->args = arguments();
       return node;
     }
 
@@ -237,4 +237,18 @@ Node *primary() {
   }
 
   return new_node_num(expect_number());
+}
+
+Node *arguments() {
+  if (consume(")"))
+    return NULL;
+
+  Node *head = expr();
+  Node *cur = head;
+  while (consume(",")) {
+    cur->next = expr();
+    cur = cur->next;
+  }
+  expect(")");
+  return head;
 }
