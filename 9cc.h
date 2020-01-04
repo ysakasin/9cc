@@ -35,8 +35,11 @@ extern Token *token;
 
 bool consume(char *op);
 Token *consume_ident();
+
 void expect(char *op);
 int expect_number();
+Token *expect_ident();
+
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str);
 int reserved(char *p);
@@ -47,6 +50,8 @@ Token *tokenize(char *p);
 //
 
 typedef enum {
+  ND_PROGRAM,
+  ND_FUNC,   // 関数定義
   ND_RETURN,
   ND_IF,
   ND_WHILE,
@@ -68,6 +73,7 @@ typedef enum {
 } NodeKind;
 
 typedef struct Node Node;
+typedef struct LVar LVar;
 
 struct Node {
   NodeKind kind;
@@ -80,19 +86,21 @@ struct Node {
   Node *els;  // ND_IF
   Node *init; // ND_FOR
   Node *post; // ND_FOR
-  Node *body; // ND_BLOCK
+  Node *body; // ND_BLOCK, ND_FUNC
   Node *next; // ND_BLOCK, ND_CALL
-  char *name; // ND_CALL
+  char *name; // ND_CALL, ND_FUNC
   Node *args; // ND_CALL
+  LVar *locals; // ND_FUNC
+
+  Node *code; // ND_PROGRAM
 };
 
 Node *new_node(NodeKind kind);
 Node *new_node_binop(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
-extern Node *code[100];
-
-void program();
+Node *program();
+Node *func_decl();
 Node *stmt();
 Node *expr();
 Node *assign();

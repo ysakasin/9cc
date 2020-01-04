@@ -47,6 +47,12 @@ LVar *append_lvar(Token *tok) {
   return var;
 }
 
+char *strndup(char *str, int size) {
+  char *ret = calloc(size, sizeof(char));
+  strncpy(ret, str, size);
+  return ret;
+}
+
 /* Grammar
 program    = stmt*
 stmt       = expr ";"
@@ -64,15 +70,32 @@ primary    = num
            | "(" expr ")"
 */
 
-Node *code[100];
+Node *program() {
+  Node head = {};
+  Node *cur = &head;
 
-void program() {
+  while (!at_eof()) {
+    cur->next = func_decl();
+    cur = cur->next;
+  }
+
+  Node *prog = new_node(ND_PROGRAM);
+  prog->code = head.next;
+  return prog;
+}
+
+Node *func_decl() {
+  Node *node = new_node(ND_FUNC);
   locals = calloc(1, sizeof(LVar));
 
-  int i = 0;
-  while (!at_eof())
-    code[i++] = stmt();
-  code[i] = NULL;
+  Token *tok = expect_ident();
+  node->name = strndup(tok->str, tok->len); 
+  expect("(");
+  expect(")");
+  node->body = stmt();
+  node->locals = locals;
+
+  return node;
 }
 
 Node *stmt() {
@@ -223,8 +246,7 @@ Node *primary() {
   if (tok) {
     if (consume("(")) {
       Node *node = new_node(ND_CALL);
-      node->name = calloc(tok->len, sizeof(char));
-      strncpy(node->name, tok->str, tok->len);
+      node->name = strndup(tok->str, tok->len);
       node->args = arguments();
       return node;
     }

@@ -2,8 +2,9 @@
 try() {
   expected="$1"
   input="$2"
+  code="main(){$input}"
 
-  ./9cc "$input" > tmp.s
+  ./9cc "$code" > tmp.s
   gcc -o tmp tmp.s
   ./tmp
   actual="$?"
@@ -19,10 +20,28 @@ try() {
 try_stdout() {
   expected="$1"
   input="$2"
+  code="main(){$input}"
 
-  ./9cc "$input" > tmp.s
+  ./9cc "$code" > tmp.s
   gcc -o tmp tmp.s foo.o
   actual=`./tmp`
+
+  if [ "$actual" = "$expected" ]; then
+    echo "$input => $actual"
+  else
+    echo "$input => $expected expected, but got $actual"
+    exit 1
+  fi
+}
+
+try_func() {
+  expected="$1"
+  input="$2"
+
+  ./9cc "$input" > tmp.s
+  gcc -o tmp tmp.s
+  ./tmp
+  actual="$?"
 
   if [ "$actual" = "$expected" ]; then
     echo "$input => $actual"
@@ -77,5 +96,10 @@ try 11 'a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
 try_stdout "OK" 'foo();'
 try_stdout "10" 'bar(4, 1+5);'
 try_stdout "100" 'baz(2*50);'
+
+try_func 10 "ten(){ return 10; } main() { return ten(); }"
+try_func 10 "ten(){ a = 10; return a; } main() { return ten(); }"
+try_func 10 "ten(){ a = 5; b = 2; return a * b; } main() { return ten(); }"
+
 
 echo OK

@@ -44,6 +44,14 @@ int expect_number() {
   return val;
 }
 
+Token *expect_ident() {
+  if (token->kind != TK_IDENT)
+    error_at(token->str, "識別子ではありません");
+  Token *ret = token;
+  token = token->next;
+  return ret;
+}
+
 bool at_eof() {
   return token->kind == TK_EOF;
 }

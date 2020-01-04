@@ -41,21 +41,9 @@ int main(int argc, char **argv) {
 
   user_input = argv[1];
   token = tokenize(user_input);
-  program();
+  Node *prog = program();
 
-  printf(".intel_syntax noprefix\n");
-  printf(".global main\n");
-  printf("main:\n");
-
-  // プロローグ
-  // 変数26個分の領域を確保する
-  printf("  push rbp\n");
-  printf("  mov rbp, rsp\n");
-  printf("  sub rsp, %d\n", locals->offset);
-
-  for (int i = 0; code[i]; i++) {
-    gen(code[i]);
-  }
+  gen(prog);
 
   // エピローグ
   gen_epilogue();
