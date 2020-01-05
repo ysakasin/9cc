@@ -125,19 +125,23 @@ void gen(Node *node) {
     printf("  push rax\n");
     return;
   }
-  case ND_FUNC:
+  case ND_FUNC: {
     printf("%s:\n", node->name);
 
     // プロローグ
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
-    printf("  sub rsp, %d\n", node->locals->offset);
+    for (int i = 0; i < node->nparams; i++) {
+      printf("  push %s\n", call_reg[i]);
+    }
+    printf("  sub rsp, %d\n", node->locals->offset - node->params->offset);
     
     for (Node *cur = node->body; cur; cur = cur->next) {
       gen(cur);
     }
     gen_epilogue();
     return;
+  }
   case ND_PROGRAM:
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");

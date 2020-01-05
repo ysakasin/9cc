@@ -30,6 +30,13 @@ Node *new_node_lvar(int offset) {
 
 LVar *locals;
 
+LVar *new_lvar(Token *tok) {
+  LVar *var = calloc(1, sizeof(LVar));
+  var->name = tok->str;
+  var->len = tok->len;
+  return var;
+}
+
 LVar *find_lvar(Token *tok) {
   for (LVar *var = locals; var; var = var->next)
     if (var->len == tok->len && strncmp(var->name, tok->str, var->len) == 0)
@@ -38,13 +45,20 @@ LVar *find_lvar(Token *tok) {
 }
 
 LVar *append_lvar(Token *tok) {
-  LVar *var = calloc(1, sizeof(LVar));
+  LVar *var = new_lvar(tok);
   var->next = locals;
-  var->name = tok->str;
-  var->len = tok->len;
   var->offset = locals->offset + 8;
   locals = var;
   return var;
+}
+
+int len_lvar(LVar *lvar) {
+  int len = 0;
+  while (lvar->next) {
+    len++;
+    lvar = lvar->next;
+  }
+  return len;
 }
 
 char *strndup(char *str, int size) {
@@ -90,12 +104,31 @@ Node *func_decl() {
 
   Token *tok = expect_ident();
   node->name = strndup(tok->str, tok->len); 
-  expect("(");
-  expect(")");
+  node->params = func_params();
+  node->nparams = len_lvar(node->params);
   node->body = stmt();
   node->locals = locals;
 
+  if (node->nparams > 6)
+    error_at(tok->str, "引数の数が6以下ではありません");
+
   return node;
+}
+
+LVar *func_params() {
+  expect("(");
+  if (consume(")"))
+    return locals;
+
+  Token *tok = expect_ident();
+  append_lvar(tok);
+
+  while (consume(",")) {
+    Token *tok = expect_ident();
+    append_lvar(tok);
+  }
+  expect(")");
+  return locals;
 }
 
 Node *stmt() {

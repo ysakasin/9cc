@@ -91,6 +91,8 @@ struct Node {
   char *name; // ND_CALL, ND_FUNC
   Node *args; // ND_CALL
   LVar *locals; // ND_FUNC
+  LVar *params; // ND_FUNC
+  int nparams;  // ND_FUNC
 
   Node *code; // ND_PROGRAM
 };
@@ -111,6 +113,8 @@ Node *mul();
 Node *unary();
 Node *primary();
 Node *arguments();
+
+LVar *func_params();
 
 //
 // Variable

@@ -100,6 +100,9 @@ try_stdout "100" 'baz(2*50);'
 try_func 10 "ten(){ return 10; } main() { return ten(); }"
 try_func 10 "ten(){ a = 10; return a; } main() { return ten(); }"
 try_func 10 "ten(){ a = 5; b = 2; return a * b; } main() { return ten(); }"
+try_func 5 "add(a, b){ return a + b; } main() { return add(4, 1); }"
+try_func 55 "fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } main() { return fib(10); }"
+try_func 89 "fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } main() { return fib(11); }"
 
 
 echo OK
