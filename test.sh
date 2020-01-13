@@ -2,7 +2,7 @@
 try() {
   expected="$1"
   input="$2"
-  code="main(){$input}"
+  code="int main(){$input}"
 
   ./9cc "$code" > tmp.s
   gcc -o tmp tmp.s
@@ -20,7 +20,7 @@ try() {
 try_stdout() {
   expected="$1"
   input="$2"
-  code="main(){$input}"
+  code="int main(){$input}"
 
   ./9cc "$code" > tmp.s
   gcc -o tmp tmp.s foo.o
@@ -98,12 +98,12 @@ try_stdout "OK" 'foo();'
 try_stdout "10" 'bar(4, 1+5);'
 try_stdout "100" 'baz(2*50);'
 
-try_func 10 "ten(){ return 10; } main() { return ten(); }"
-try_func 10 "ten(){ int a; a = 10; return a; } main() { return ten(); }"
-try_func 10 "ten(){ int a; int b; a = 5; b = 2; return a * b; } main() { return ten(); }"
-try_func 5 "add(a, b){ return a + b; } main() { return add(4, 1); }"
-try_func 55 "fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } main() { return fib(10); }"
-try_func 89 "fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } main() { return fib(11); }"
+try_func 10 "int ten(){ return 10; } int main() { return ten(); }"
+try_func 10 "int ten(){ int a; a = 10; return a; } int main() { return ten(); }"
+try_func 10 "int ten(){ int a; int b; a = 5; b = 2; return a * b; } int main() { return ten(); }"
+try_func 5 "int add(a, b){ return a + b; } int main() { return add(4, 1); }"
+try_func 55 "int fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } int main() { return fib(10); }"
+try_func 89 "int fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } int main() { return fib(11); }"
 
 
 echo OK

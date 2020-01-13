@@ -103,6 +103,7 @@ Node *program() {
 }
 
 Node *func_decl() {
+  expect("int");
   Node *node = new_node(ND_FUNC);
   locals = calloc(1, sizeof(LVar));
 
