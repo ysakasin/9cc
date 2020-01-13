@@ -67,6 +67,8 @@ typedef enum {
   ND_SUB,    // -
   ND_MUL,    // *
   ND_DIV,    // /
+  ND_ADDR,   // &x
+  ND_DEREF,  // *x
   ND_LVAR,   // ローカル変数
   ND_NUM,    // 整数
   ND_CALL,   // 関数呼び出し

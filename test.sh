@@ -92,6 +92,7 @@ try 2 'a = 3; if (a == 1) a = 4; else a = 2; a;'
 try 11 'a = 1; while (a < 10) a = a + 2; return a;'
 try 55 'a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
 try 11 'a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
+try 3 'x = 3; y = 5; z = &y + 8; return *z;'
 
 try_stdout "OK" 'foo();'
 try_stdout "10" 'bar(4, 1+5);'
