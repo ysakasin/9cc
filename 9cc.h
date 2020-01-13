@@ -20,6 +20,7 @@ typedef enum {
 } TokenKind;
 
 typedef struct Token Token;
+typedef struct Type Type;
 
 // トークン型
 struct Token {
@@ -35,15 +36,36 @@ extern Token *token;
 
 bool consume(char *op);
 Token *consume_ident();
+Type *consume_type();
 
 void expect(char *op);
 int expect_number();
 Token *expect_ident();
+Type *expect_type();
 
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str);
 int reserved(char *p);
 Token *tokenize(char *p);
+
+//
+// Type
+//
+
+typedef enum {
+  TY_INT,
+  TY_PTR,
+} TypeKind;
+
+typedef struct Type Type;
+
+struct Type {
+  TypeKind ty;
+  Type *ptr_to;
+};
+
+Type *ty_int();
+Type *ptr_to(Type *ty);
 
 //
 // Node

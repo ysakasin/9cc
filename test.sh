@@ -93,6 +93,7 @@ try 11 'int a; a = 1; while (a < 10) a = a + 2; return a;'
 try 55 'int a; int i; a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
 try 11 'int a; a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
 try 3 'int x; int y; int z; x = 3; y = 5; z = &y + 8; return *z;'
+try 3 'int x; int *y; y = &x; *y = 3; return x;'
 
 try_stdout "OK" 'foo();'
 try_stdout "10" 'bar(4, 1+5);'

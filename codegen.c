@@ -13,6 +13,11 @@ void gen_epilogue() {
 
 // ローカル変数があるスタックの位置をスタックに格納
 void gen_lvar(Node *node) {
+  if (node->kind == ND_DEREF) {
+    gen(node->lhs);
+    return;
+  }
+
   if (node->kind != ND_LVAR)
     error("代入の左辺値が変数ではありません");
 

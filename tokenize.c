@@ -24,6 +24,18 @@ Token *consume_ident() {
   return ret;
 }
 
+Type *consume_type() {
+  if (!consume("int")) {
+    return NULL;
+  }
+  Type *type = ty_int();
+
+  while (consume("*")) {
+    type = ptr_to(type);
+  }
+  return type;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char *op) {
@@ -50,6 +62,16 @@ Token *expect_ident() {
   Token *ret = token;
   token = token->next;
   return ret;
+}
+
+Type *expect_type() {
+  expect("int");
+  Type *type = ty_int();
+
+  while (consume("*")) {
+    type = ptr_to(type);
+  }
+  return type;
 }
 
 bool at_eof() {

@@ -103,7 +103,7 @@ Node *program() {
 }
 
 Node *func_decl() {
-  expect("int");
+  expect_type();
   Node *node = new_node(ND_FUNC);
   locals = calloc(1, sizeof(LVar));
 
@@ -189,7 +189,7 @@ Node *stmt() {
   if (consume("return")) {
     node = new_node(ND_RETURN);
     node->lhs = expr();
-  } else if (consume("int")) {
+  } else if (consume_type()) {
     Token *tok = expect_ident();
     append_lvar(tok);
     node = new_node_nop();
