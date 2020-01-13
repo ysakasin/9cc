@@ -72,6 +72,7 @@ typedef enum {
   ND_LVAR,   // ローカル変数
   ND_NUM,    // 整数
   ND_CALL,   // 関数呼び出し
+  ND_NOP,    // No Operation
 } NodeKind;
 
 typedef struct Node Node;

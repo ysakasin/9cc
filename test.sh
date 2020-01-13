@@ -77,30 +77,30 @@ try 0 '2 > 3;'
 try 1 '3 > 2;'
 try 0 '2 >= 3;'
 try 1 '3 >= 2;'
-try 4 'a=4; a;'
-try 4 'z=4; z;'
-try 3 'a=4; a-1;'
-try 11 'a=5+6; a;'
-try 21 'a = b = 5+6; b = b - 1; a + b;'
-try 6 'foo = 1; bar = 2 + 3; foo + bar;'
+try 4 'int a; a=4; a;'
+try 4 'int z; z=4; z;'
+try 3 'int a; a=4; a-1;'
+try 11 'int a; a=5+6; a;'
+try 21 'int a; int b; a = b = 5+6; b = b - 1; a + b;'
+try 6 'int foo; int bar; foo = 1; bar = 2 + 3; foo + bar;'
 try 5 'return 5; return 8; 10;'
-try 14 'a = 3; b = 5 * 6 - 8; return a + b / 2; 100;'
-try 4 'a = 1; if (a == 1) a = 4; a;'
-try 3 'a = 3; if (a == 1) a = 4; a;'
-try 4 'a = 1; if (a == 1) a = 4; else a = 2; a;'
-try 2 'a = 3; if (a == 1) a = 4; else a = 2; a;'
-try 11 'a = 1; while (a < 10) a = a + 2; return a;'
-try 55 'a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
-try 11 'a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
-try 3 'x = 3; y = 5; z = &y + 8; return *z;'
+try 14 'int a; int b; a = 3; b = 5 * 6 - 8; return a + b / 2; 100;'
+try 4 'int a; a = 1; if (a == 1) a = 4; a;'
+try 3 'int a; a = 3; if (a == 1) a = 4; a;'
+try 4 'int a; a = 1; if (a == 1) a = 4; else a = 2; a;'
+try 2 'int a; a = 3; if (a == 1) a = 4; else a = 2; a;'
+try 11 'int a; a = 1; while (a < 10) a = a + 2; return a;'
+try 55 'int a; int i; a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
+try 11 'int a; a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
+try 3 'int x; int y; int z; x = 3; y = 5; z = &y + 8; return *z;'
 
 try_stdout "OK" 'foo();'
 try_stdout "10" 'bar(4, 1+5);'
 try_stdout "100" 'baz(2*50);'
 
 try_func 10 "ten(){ return 10; } main() { return ten(); }"
-try_func 10 "ten(){ a = 10; return a; } main() { return ten(); }"
-try_func 10 "ten(){ a = 5; b = 2; return a * b; } main() { return ten(); }"
+try_func 10 "ten(){ int a; a = 10; return a; } main() { return ten(); }"
+try_func 10 "ten(){ int a; int b; a = 5; b = 2; return a * b; } main() { return ten(); }"
 try_func 5 "add(a, b){ return a + b; } main() { return add(4, 1); }"
 try_func 55 "fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } main() { return fib(10); }"
 try_func 89 "fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } main() { return fib(11); }"

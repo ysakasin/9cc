@@ -28,6 +28,10 @@ Node *new_node_lvar(int offset) {
   return node;
 }
 
+Node *new_node_nop() {
+  return new_node(ND_NOP);
+}
+
 LVar *locals;
 
 LVar *new_lvar(Token *tok) {
@@ -184,6 +188,10 @@ Node *stmt() {
   if (consume("return")) {
     node = new_node(ND_RETURN);
     node->lhs = expr();
+  } else if (consume("int")) {
+    Token *tok = expect_ident();
+    append_lvar(tok);
+    node = new_node_nop();
   } else {
     node = new_node(ND_EXPR_STMT);
     node->lhs = expr();
@@ -290,7 +298,7 @@ Node *primary() {
 
     LVar *var = find_lvar(tok);
     if (var == NULL) {
-      var = append_lvar(tok);
+      error_at(tok->str, "定義されていない変数です\n");
     }
     return new_node_lvar(var->offset);
   }
