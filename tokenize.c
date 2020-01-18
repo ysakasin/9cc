@@ -1,15 +1,14 @@
+#include "9cc.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include "9cc.h"
 
 Token *token;
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 bool consume(char *op) {
-  if (token->kind != TK_RESERVED ||
-      strlen(op) != token->len ||
+  if (token->kind != TK_RESERVED || strlen(op) != token->len ||
       memcmp(token->str, op, token->len))
     return false;
   token = token->next;
@@ -39,8 +38,7 @@ Type *consume_type() {
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char *op) {
-  if (token->kind != TK_RESERVED ||
-      strlen(op) != token->len ||
+  if (token->kind != TK_RESERVED || strlen(op) != token->len ||
       memcmp(token->str, op, token->len))
     error_at(token->str, "'%s'ではありません", op);
   token = token->next;
@@ -74,9 +72,7 @@ Type *expect_type() {
   return type;
 }
 
-bool at_eof() {
-  return token->kind == TK_EOF;
-}
+bool at_eof() { return token->kind == TK_EOF; }
 
 // 新しいトークンを作成してcurに繋げる
 Token *new_token(TokenKind kind, Token *cur, char *str) {
@@ -100,9 +96,7 @@ int reserved(char *p) {
   return 0;
 }
 
-bool is_alnum(char c) {
-  return isalnum(c) || c == '_';
-}
+bool is_alnum(char c) { return isalnum(c) || c == '_'; }
 
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p) {
@@ -117,8 +111,8 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    int len;
-    if (len = reserved(p)) {
+    int len = reserved(p);
+    if (len) {
       cur = new_token(TK_RESERVED, cur, p);
       cur->len = len;
       p += len;
@@ -178,7 +172,7 @@ Token *tokenize(char *p) {
       while (isalnum(*p))
         p++;
       cur = new_token(TK_IDENT, cur, q);
-      cur->len = p-q;
+      cur->len = p - q;
       continue;
     }
 

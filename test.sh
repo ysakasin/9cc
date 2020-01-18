@@ -102,9 +102,9 @@ try_stdout "100" 'baz(2*50);'
 try_func 10 "int ten(){ return 10; } int main() { return ten(); }"
 try_func 10 "int ten(){ int a; a = 10; return a; } int main() { return ten(); }"
 try_func 10 "int ten(){ int a; int b; a = 5; b = 2; return a * b; } int main() { return ten(); }"
-try_func 5 "int add(a, b){ return a + b; } int main() { return add(4, 1); }"
-try_func 55 "int fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } int main() { return fib(10); }"
-try_func 89 "int fib(n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } int main() { return fib(11); }"
+try_func 5 "int add(int a, int b){ return a + b; } int main() { return add(4, 1); }"
+try_func 55 "int fib(int n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } int main() { return fib(10); }"
+try_func 89 "int fib(int n){ if (n <= 1) return n; return fib(n-1) + fib(n-2); } int main() { return fib(11); }"
 
 
 echo OK

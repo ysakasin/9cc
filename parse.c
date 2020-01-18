@@ -1,7 +1,7 @@
+#include "9cc.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include "9cc.h"
 
 Node *new_node(NodeKind kind) {
   Node *node = calloc(1, sizeof(Node));
@@ -28,9 +28,7 @@ Node *new_node_lvar(int offset) {
   return node;
 }
 
-Node *new_node_nop() {
-  return new_node(ND_NOP);
-}
+Node *new_node_nop() { return new_node(ND_NOP); }
 
 LVar *locals;
 
@@ -48,10 +46,11 @@ LVar *find_lvar(Token *tok) {
   return NULL;
 }
 
-LVar *append_lvar(Token *tok) {
+LVar *append_lvar(Token *tok, Type *type) {
   LVar *var = new_lvar(tok);
   var->next = locals;
   var->offset = locals->offset + 8;
+  var->type = type;
   locals = var;
   return var;
 }
@@ -65,7 +64,7 @@ int len_lvar(LVar *lvar) {
   return len;
 }
 
-char *strndup(char *str, int size) {
+char *stringdup(char *str, int size) {
   char *ret = calloc(size, sizeof(char));
   strncpy(ret, str, size);
   return ret;
@@ -108,7 +107,7 @@ Node *func_decl() {
   locals = calloc(1, sizeof(LVar));
 
   Token *tok = expect_ident();
-  node->name = strndup(tok->str, tok->len); 
+  node->name = stringdup(tok->str, tok->len);
   node->params = func_params();
   node->nparams = len_lvar(node->params);
   node->body = stmt();
@@ -125,12 +124,14 @@ LVar *func_params() {
   if (consume(")"))
     return locals;
 
+  Type *type = expect_type();
   Token *tok = expect_ident();
-  append_lvar(tok);
+  append_lvar(tok, type);
 
   while (consume(",")) {
+    Type *type = expect_type();
     Token *tok = expect_ident();
-    append_lvar(tok);
+    append_lvar(tok, type);
   }
   expect(")");
   return locals;
@@ -139,7 +140,7 @@ LVar *func_params() {
 Node *stmt() {
   Node *node;
 
-  if (consume("if")){
+  if (consume("if")) {
     node = new_node(ND_IF);
     expect("(");
     node->cond = expr();
@@ -186,13 +187,18 @@ Node *stmt() {
     return node;
   }
 
+  Type *type = consume_type();
+  if (type) {
+    Token *tok = expect_ident();
+    append_lvar(tok, type);
+    node = new_node_nop();
+    expect(";");
+    return node;
+  }
+
   if (consume("return")) {
     node = new_node(ND_RETURN);
     node->lhs = expr();
-  } else if (consume_type()) {
-    Token *tok = expect_ident();
-    append_lvar(tok);
-    node = new_node_nop();
   } else {
     node = new_node(ND_EXPR_STMT);
     node->lhs = expr();
@@ -202,9 +208,7 @@ Node *stmt() {
   return node;
 }
 
-Node *expr() {
-  return assign();
-}
+Node *expr() { return assign(); }
 
 Node *assign() {
   Node *node = equality();
@@ -292,7 +296,7 @@ Node *primary() {
   if (tok) {
     if (consume("(")) {
       Node *node = new_node(ND_CALL);
-      node->name = strndup(tok->str, tok->len);
+      node->name = stringdup(tok->str, tok->len);
       node->args = arguments();
       return node;
     }

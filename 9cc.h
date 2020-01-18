@@ -61,7 +61,7 @@ typedef struct Type Type;
 
 struct Type {
   TypeKind ty;
-  Type *ptr_to;
+  Type *base;
 };
 
 Type *ty_int();
@@ -73,7 +73,7 @@ Type *ptr_to(Type *ty);
 
 typedef enum {
   ND_PROGRAM,
-  ND_FUNC,   // 関数定義
+  ND_FUNC, // 関数定義
   ND_RETURN,
   ND_IF,
   ND_WHILE,
@@ -102,19 +102,20 @@ typedef struct LVar LVar;
 
 struct Node {
   NodeKind kind;
+  Type *type;
   Node *lhs;
   Node *rhs;
-  int val;    // ND_NUM
-  int offset; // ND_LVAR
-  Node *cond; // ND_IF, ND_WHILE, ND_FOR
-  Node *then; // ND_IF, ND_WHILE, ND_FOR
-  Node *els;  // ND_IF
-  Node *init; // ND_FOR
-  Node *post; // ND_FOR
-  Node *body; // ND_BLOCK, ND_FUNC
-  Node *next; // ND_BLOCK, ND_CALL
-  char *name; // ND_CALL, ND_FUNC
-  Node *args; // ND_CALL
+  int val;      // ND_NUM
+  int offset;   // ND_LVAR
+  Node *cond;   // ND_IF, ND_WHILE, ND_FOR
+  Node *then;   // ND_IF, ND_WHILE, ND_FOR
+  Node *els;    // ND_IF
+  Node *init;   // ND_FOR
+  Node *post;   // ND_FOR
+  Node *body;   // ND_BLOCK, ND_FUNC
+  Node *next;   // ND_BLOCK, ND_CALL
+  char *name;   // ND_CALL, ND_FUNC
+  Node *args;   // ND_CALL
   LVar *locals; // ND_FUNC
   LVar *params; // ND_FUNC
   int nparams;  // ND_FUNC
@@ -152,6 +153,7 @@ struct LVar {
   char *name; // 変数の名前
   int len;    // 変数名の長さ
   int offset; // RBPからのオフセット
+  Type *type; // 変数の型
 };
 
 extern LVar *locals;
@@ -162,3 +164,4 @@ extern LVar *locals;
 
 void gen_epilogue();
 void gen(Node *node);
+void eval_type(Node *node);

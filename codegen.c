@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "9cc.h"
+#include <stdio.h>
 
 static const char *call_reg[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
@@ -28,7 +28,7 @@ void gen_lvar(Node *node) {
 
 void gen(Node *node) {
   switch (node->kind) {
-  case ND_NUM: 
+  case ND_NUM:
     printf("  push %d\n", node->val);
     return;
   case ND_LVAR:
@@ -140,7 +140,7 @@ void gen(Node *node) {
       printf("  push %s\n", call_reg[i]);
     }
     printf("  sub rsp, %d\n", node->locals->offset - node->params->offset);
-    
+
     for (Node *cur = node->body; cur; cur = cur->next) {
       gen(cur);
     }
@@ -165,6 +165,7 @@ void gen(Node *node) {
     return;
   case ND_NOP:
     return;
+  default:;
   }
 
   gen(node->lhs);
@@ -175,8 +176,8 @@ void gen(Node *node) {
 
   switch (node->kind) {
   case ND_EQ:
-    printf("  cmp rax, rdi\n");  // 比較してフラグレジスタにセット
-    printf("  sete al\n");       // フラグレジスタを al にセット。alはraxの下位8bit
+    printf("  cmp rax, rdi\n"); // 比較してフラグレジスタにセット
+    printf("  sete al\n"); // フラグレジスタを al にセット。alはraxの下位8bit
     printf("  movzb rax, al\n"); // raxの上位56bitを0埋め
     break;
   case ND_NEQ:

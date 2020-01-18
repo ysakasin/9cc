@@ -1,10 +1,10 @@
+#include "9cc.h"
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "9cc.h"
 
 // 入力プログラム
 char *user_input;
@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
   token = tokenize(user_input);
   Node *prog = program();
 
+  eval_type(prog);
   gen(prog);
 
   // エピローグ
