@@ -5,7 +5,7 @@ try() {
   code="int main(){$input}"
 
   ./9cc "$code" > tmp.s
-  gcc -o tmp tmp.s
+  gcc -o tmp tmp.s foo.o
   ./tmp
   actual="$?"
 
@@ -92,8 +92,13 @@ try 2 'int a; a = 3; if (a == 1) a = 4; else a = 2; a;'
 try 11 'int a; a = 1; while (a < 10) a = a + 2; return a;'
 try 55 'int a; int i; a = 0; i = 20; for (i = 1; i <= 10; i = i + 1) a = a + i; return a;'
 try 11 'int a; a = 1; while (a < 10) {a = a + 1; a = a + 1;} return a;'
-try 3 'int x; int y; int z; x = 3; y = 5; z = &y + 8; return *z;'
+try 3 'int x; int y; int *z; x = 3; y = 5; z = &y + 2; return *z;'
+try 5 'int x; int y; int *z; x = 3; y = 5; z = &x - 2; return *z;'
 try 3 'int x; int *y; y = &x; *y = 3; return x;'
+try 4 'int *p; p = 0; return p + 1;'
+try 8 'int **p; p = 0; return p + 1;'
+try 4 'int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; return *q;'
+try 8 'int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 3; return *q;'
 
 try_stdout "OK" 'foo();'
 try_stdout "10" 'bar(4, 1+5);'

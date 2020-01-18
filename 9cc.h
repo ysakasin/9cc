@@ -66,6 +66,7 @@ struct Type {
 
 Type *ty_int();
 Type *ptr_to(Type *ty);
+int type_sizeof(Type *type);
 
 //
 // Node

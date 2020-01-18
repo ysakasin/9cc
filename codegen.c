@@ -196,9 +196,15 @@ void gen(Node *node) {
     printf("  movzb rax, al\n");
     break;
   case ND_ADD:
+    if (node->lhs->type->ty == TY_PTR) {
+      printf("  imul rdi, %d\n", type_sizeof(node->lhs->type->base));
+    }
     printf("  add rax, rdi\n");
     break;
   case ND_SUB:
+    if (node->lhs->type->ty == TY_PTR) {
+      printf("  imul rdi, %d\n", type_sizeof(node->lhs->type->base));
+    }
     printf("  sub rax, rdi\n");
     break;
   case ND_MUL:

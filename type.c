@@ -7,9 +7,7 @@ Type *new_type(TypeKind ty) {
   return type;
 }
 
-Type *ty_int() {
-  return new_type(TY_INT);
-}
+Type *ty_int() { return new_type(TY_INT); }
 
 Type *ptr_to(Type *base) {
   Type *type = new_type(TY_PTR);
@@ -22,6 +20,18 @@ LVar *find_lvar_by_offset(int offset) {
     if (var->offset == offset)
       return var;
   return NULL;
+}
+
+int type_sizeof(Type *type) {
+  switch (type->ty) {
+  case TY_INT:
+    return 4;
+  case TY_PTR:
+    return 8;
+  default:
+    error("大きさが定義されていない型のサイズが要求された:%d", type->ty);
+    return -1;
+  }
 }
 
 void eval_type(Node *node) {
