@@ -16,6 +16,12 @@ Node *new_node_binop(NodeKind kind, Node *lhs, Node *rhs) {
   return node;
 }
 
+Node *new_node_unary(NodeKind kind, Node *lhs) {
+  Node *node = new_node(kind);
+  node->lhs = lhs;
+  return node;
+}
+
 Node *new_node_num(int val) {
   Node *node = new_node(ND_NUM);
   node->val = val;
@@ -82,6 +88,7 @@ relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 add        = mul ("+" mul | "-" mul)*
 mul        = unary ("*" unary | "/" unary)*
 unary      = ("+" | "-")? primary
+           | ("sizeof" | "&" | "*") unary
 primary    = num
            | ident ("(" ")")?
            | "(" expr ")"
@@ -279,10 +286,15 @@ Node *unary() {
   else if (consume("-"))
     return new_node_binop(ND_SUB, new_node_num(0), primary());
   else if (consume("&"))
-    return new_node_binop(ND_ADDR, unary(), NULL);
+    return new_node_unary(ND_ADDR, unary());
   else if (consume("*"))
-    return new_node_binop(ND_DEREF, unary(), NULL);
-  return primary();
+    return new_node_unary(ND_DEREF, unary());
+  else if (consume("sizeof")) {
+    Node *node = primary();
+    eval_type(node);
+    return new_node_num(type_sizeof(node->type));
+  } else
+    return primary();
 }
 
 Node *primary() {
